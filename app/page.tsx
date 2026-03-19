@@ -20,16 +20,15 @@ export default function PranaIndexApp() {
   const [bubbleTime, setBubbleTime] = useState('5.0s');
   const [regCycles, setRegCycles] = useState(0);
   const [regInstruction, setRegInstruction] = useState('READY?');
-  const [isRegActive, setIsRegActive] = useState(false);
   const regHoldingRef = useRef(false);
-  const phaseTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const p1TimerRef = useRef<NodeJS.Timeout | null>(null);
+  const phaseTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const p1TimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const pulseRef = useRef<number | null>(null);
   const p1StartTimeRef = useRef(0);
+
   const P1_DURATION = 15000;
   const P2_TARGETS = 5;
   const P3_PEAK_TARGET = 85;
-  
 
   useEffect(() => {
     if (screen === 'landing') {
@@ -79,7 +78,6 @@ export default function PranaIndexApp() {
       setP1Taps(prev => [...prev, elapsed]);
     }
   };
-
   const startPhase2 = () => {
     setScreen('p2');
     setP2Taps([]);
@@ -130,7 +128,6 @@ export default function PranaIndexApp() {
       return newCount;
     });
   };
-
   const calculateScore = () => {
     let rScore = 100;
     if (p1Taps.length > 1) {
@@ -155,13 +152,19 @@ export default function PranaIndexApp() {
     const final = Math.min(99, Math.round(rScore * 0.4 + sScore * 0.3 + fScore * 0.3));
     setFinalScore(final);
     let title = '', body = '';
-    if (final >= 75) { title = 'USTAAD!'; body = 'You are perfectly in sync. Smooth like midnight Irani Chai.'; }
-    else if (final >= 45) { title = 'ZABARDAST MOOD!'; body = 'Good baseline, but the engine needs a little tuning. Stay focused!'; }
-    else { title = 'TOTAL GHOTALA!'; body = 'Engine stalled. Your rhythm is everywhere. Take a breather!'; }
+    if (final >= 75) {
+      title = 'USTAAD!';
+      body = 'You are perfectly in sync. Smooth like midnight Irani Chai.';
+    } else if (final >= 45) {
+      title = 'ZABARDAST MOOD!';
+      body = 'Good baseline, but the engine needs a little tuning. Stay focused!';
+    } else {
+      title = 'TOTAL GHOTALA!';
+      body = 'Engine stalled. Your rhythm is everywhere. Take a breather!';
+    }
     setVerdict({ title, body });
     setScreen('score');
   };
-
   const startRegulation = () => {
     setRegPhase('ready');
     setBubbleScale(1);
@@ -224,6 +227,8 @@ export default function PranaIndexApp() {
     }, 16);
   };
 
+  const [isRegActive, setIsRegActive] = useState(false);
+
   const startRegGame = () => {
     setRegPhase('ready');
     setBubbleScale(1);
@@ -233,127 +238,198 @@ export default function PranaIndexApp() {
     regHoldingRef.current = false;
     setIsRegActive(true);
   };
-
   return (
-    <div style={{ minHeight: '100vh', background: '#0A0E1A', color: 'white', fontFamily: 'Inter, sans-serif', padding: 24, overflow: 'hidden' }}>
-      {/* PI Logo */}
-      <div style={{ marginBottom: 16, textAlign: 'center' }}>
-        <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 80, height: 80, borderRadius: 9999, background: 'rgba(212,175,55,0.1)', boxShadow: '0 0 40px rgba(212,175,55,0.3)' }}>
-          <span style={{ fontSize: 40, fontWeight: 700, color: '#D4AF37', letterSpacing: -2 }}>π</span>
-        </div>
+    <main style={{ minHeight: '100vh', background: '#0A0E1A', color: '#D4AF37', fontFamily: 'Inter, system-ui, sans-serif', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 24, boxSizing: 'border-box', textAlign: 'center' }}>
+      <div style={{ marginBottom: 16 }}>
+        <span style={{ fontSize: 32, fontWeight: 900, color: '#D4AF37', textShadow: '0 0 20px rgba(212,175,55,0.5)' }}>
+          &#960;
+        </span>
+      </div>
+      <div style={{ fontSize: 10, letterSpacing: 3, textTransform: 'uppercase', marginBottom: 32, opacity: 0.8 }}>
+        Play Your Rhythm
       </div>
 
-      {/* LANDING SCREEN */}
       {screen === 'landing' && (
-        <div style={{ width: '100%', maxWidth: 400, textAlign: 'center', margin: '0 auto' }}>
-          <p style={{ fontSize: 12, letterSpacing: 2, color: '#D4AF37', fontWeight: 700, marginBottom: 8 }}>PRANA INDEX</p>
-          <div style={{ height: 2, width: '40%', background: 'rgba(212,175,55,0.5)', margin: '0 auto 16px' }} />
-          <h1 style={{ fontSize: 22, fontWeight: 900, color: '#D4AF37', letterSpacing: 3, marginBottom: 32 }}>PLAY YOUR RHYTHM</h1>
-          <div style={{ background: 'rgba(255,255,255,0.05)', padding: 24, borderRadius: 16, marginBottom: 24 }}>
-            <p><span style={{ color: '#D4AF37', fontWeight: 900, textTransform: 'uppercase', fontSize: 10 }}>01 Consistency</span></p>
-            <p><span style={{ color: '#D4AF37', fontWeight: 900, textTransform: 'uppercase', fontSize: 10 }}>02 Reflux</span></p>
-            <p><span style={{ color: '#D4AF37', fontWeight: 900, textTransform: 'uppercase', fontSize: 10 }}>03 Focus</span></p>
+        <div style={{ width: '100%', maxWidth: 320 }}>
+          <h1 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8, letterSpacing: 4, textTransform: 'uppercase' }}>Prana Index</h1>
+          <div style={{ fontSize: 10, opacity: 0.5, marginBottom: 24, letterSpacing: 1 }}>
+            --------------------------------
           </div>
-          <button onClick={startPhase1} style={{ background: '#D4AF37', color: '#0A0E1A', fontWeight: 900, padding: '16px 32px', borderRadius: 9999, fontSize: 11, textTransform: 'uppercase', letterSpacing: 2, border: 'none', cursor: 'pointer', boxShadow: '0 0 30px rgba(212,175,55,0.4)' }}>START ENGINE</button>
+          <p style={{ fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', opacity: 0.7, marginBottom: 24 }}>
+            Play Your Rhythm
+          </p>
+          <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 12, padding: 20, marginBottom: 24 }}>
+            <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 8, opacity: 0.7 }}>01 Consistency</div>
+            <div style={{ fontSize: 8, opacity: 0.4 }}>Tap a steady beat for 15s.</div>
+          </div>
+          <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 12, padding: 20, marginBottom: 24 }}>
+            <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 8, opacity: 0.7 }}>02 Reflex</div>
+            <div style={{ fontSize: 8, opacity: 0.4 }}>Catch 5 nodes as fast as possible.</div>
+          </div>
+          <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 12, padding: 20, marginBottom: 32 }}>
+            <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 8, opacity: 0.7 }}>03 Focus</div>
+            <div style={{ fontSize: 8, opacity: 0.4 }}>Hit the button at the peak of the wave.</div>
+          </div>
+          <button
+            onClick={startPhase1}
+            onTouchStart={startPhase1}
+            style={{ width: '100%', background: '#D4AF37', color: '#0A0E1A', fontWeight: 900, padding: 18, borderRadius: 9999, fontSize: 10, textTransform: 'uppercase', letterSpacing: 2, border: 'none', cursor: 'pointer', boxShadow: '0 4px 20px rgba(212,175,55,0.3)' }}
+          >
+            Start Engine
+          </button>
         </div>
       )}
-
-      {/* PHASE 1 - CONSISTENCY */}
       {screen === 'p1' && (
-        <div style={{ width: '100%', maxWidth: 400, textAlign: 'center', margin: '0 auto' }}>
-          <h3 style={{ fontSize: 12, letterSpacing: 3, color: '#D4AF37', fontWeight: 700, marginBottom: 24 }}>Play Your Rhythm</h3>
-          <button id="tap-btn" onClick={handleP1Tap} onTouchStart={handleP1Tap} style={{ width: '100%', height: 320, background: 'rgba(255,255,255,0.05)', borderRadius: 24, border: '2px solid #D4AF37', cursor: 'pointer', marginBottom: 24 }}>
-            <div style={{ fontWeight: 900, color: '#D4AF37', fontSize: 32 }}>PI</div>
-          </button>
-          <div style={{ marginTop: 48, width: '100%', height: 6, background: 'rgba(255,255,255,0.1)', borderRadius: 9999, overflow: 'hidden' }}>
-            <div id="p1-progress" style={{ height: '100%', background: '#D4AF37', width: `${p1Progress}%`, transition: 'width 0.1s' }} />
+        <div style={{ width: '100%', maxWidth: 320 }}>
+          <h2 style={{ fontSize: 14, fontWeight: 700, marginBottom: 40, letterSpacing: 2, textTransform: 'uppercase', opacity: 0.8 }}>Play Your Rhythm</h2>
+          <div style={{ position: 'relative', background: 'rgba(255,255,255,0.03)', borderRadius: 24, aspectRatio: '1', marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', boxShadow: 'inset 0 0 60px rgba(0,0,0,0.5)' }}>
+            {p1Taps.map((t, i) => (
+              <div key={i} style={{ position: 'absolute', width: 6, height: 6, background: '#00B4D8', borderRadius: '50%', left: `${(t / P1_DURATION) * 100}%`, bottom: '4%' }} />
+            ))}
+            <div style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%,-50%)' }}>
+              <button
+                onClick={handleP1Tap}
+                onTouchStart={handleP1Tap}
+                style={{ width: 80, height: 80, borderRadius: '50%', background: '#D4AF37', color: '#0A0E1A', fontSize: 24, fontWeight: 900, border: 'none', cursor: 'pointer', boxShadow: '0 0 30px rgba(212,175,55,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                PI
+              </button>
+            </div>
           </div>
-          <p style={{ marginTop: 24, fontSize: 10, color: '#D4AF37', textTransform: 'uppercase', letterSpacing: 1 }}>{p1Taps.length > 0 ? 'KEEP A STEADY BEAT!' : 'TAP!'}</p>
+          <div style={{ fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', marginBottom: 12, opacity: 0.7 }}>
+            {p1Taps.length > 0 ? 'KEEP A STEADY BEAT!' : 'TAP!'}
+          </div>
+          <div style={{ background: 'rgba(255,255,255,0.1)', borderRadius: 9999, height: 4, overflow: 'hidden' }}>
+            <div style={{ background: '#D4AF37', height: '100%', width: `${p1Progress}%`, transition: 'width 0.1s' }} />
+          </div>
         </div>
       )}
-
-      {/* PHASE 2 - REFLUX */}
       {screen === 'p2' && (
-        <div style={{ width: '100%', maxWidth: 400, textAlign: 'center', margin: '0 auto' }}>
-          <h3 style={{ fontSize: 12, letterSpacing: 4, color: '#D4AF37', fontWeight: 700, marginBottom: 16 }}>Quick! Catch the</h3>
-          <div id="arena" style={{ position: 'relative', width: '100%', height: 320, background: 'rgba(255,255,255,0.03)', borderRadius: 16, marginBottom: 24 }}>
-            <button id="target" onClick={handleTargetTap} onTouchStart={handleTargetTap} style={{ position: 'absolute', left: targetPos.left, top: targetPos.top, transform: 'translate(-50%, -50%)', width: 48, height: 48, borderRadius: 9999, background: '#D4AF37', border: 'none', cursor: 'pointer', boxShadow: '0 0 20px rgba(212,175,55,0.6)', transition: 'all 0.3s' }}>
-              <span style={{ color: '#0A0E1A', fontWeight: 900, fontSize: 18 }}>+</span>
+        <div style={{ width: '100%', maxWidth: 320 }}>
+          <h2 style={{ fontSize: 14, fontWeight: 700, marginBottom: 8, letterSpacing: 2, textTransform: 'uppercase', opacity: 0.8 }}>Quick! Catch the</h2>
+          <div style={{ position: 'relative', background: 'rgba(255,255,255,0.03)', borderRadius: 24, aspectRatio: '1', marginBottom: 24, overflow: 'hidden', boxShadow: 'inset 0 0 60px rgba(0,0,0,0.5)' }}>
+            {p2Taps.map((t, i) => (
+              <div key={i} style={{ position: 'absolute', width: 6, height: 6, background: '#D4AF37', borderRadius: '50%', left: targetPos.left, top: targetPos.top }} />
+            ))}
+            <button
+              onClick={handleTargetTap}
+              onTouchStart={handleTargetTap}
+              style={{ position: 'absolute', width: 32, height: 32, borderRadius: '50%', background: '#00B4D8', border: 'none', cursor: 'pointer', left: targetPos.left, top: targetPos.top, transform: 'translate(-50%,-50%)', boxShadow: '0 0 20px rgba(0,180,216,0.5)' }}
+            >
+              +
             </button>
           </div>
-          <p style={{ marginTop: 16, fontSize: 11, color: '#D4AF37', textTransform: 'uppercase', letterSpacing: 1 }}>Nodes: {p2Taps.length}/{P2_TARGETS}</p>
+          <div style={{ fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', opacity: 0.5 }}>
+            Nodes: {p2Taps.length}/{P2_TARGETS}
+          </div>
         </div>
       )}
-
-      {/* PHASE 3 - FOCUS */}
       {screen === 'p3' && (
-        <div style={{ width: '100%', maxWidth: 400, textAlign: 'center', margin: '0 auto' }}>
-          <h3 style={{ fontSize: 12, letterSpacing: 4, color: '#D4AF37', fontWeight: 700, marginBottom: 24 }}>Hit the Peak</h3>
-          <div style={{ position: 'relative', width: 256, height: 256, margin: '0 auto 32px' }}>
-            <div id="wave-pulse" style={{ position: 'absolute', border: `4px solid ${p1Taps.length > 0 && hitCount >= 1 ? '#D4AF37' : 'rgba(255,255,255,0.1)'}`, borderRadius: 9999, width: pulseSize, height: pulseSize, left: '50%', top: '50%', transform: 'translate(-50%, -50%)', transition: 'all 0.15s' }} />
-            <div id="wave-pulse-2" style={{ position: 'absolute', border: `4px solid ${p1Taps.length > 0 && hitCount >= 2 ? '#D4AF37' : 'rgba(255,255,255,0.1)'}`, borderRadius: 9999, width: pulseSize * 1.5, height: pulseSize * 1.5, left: '50%', top: '50%', transform: 'translate(-50%, -50%)', transition: 'all 0.15s' }} />
-            <div id="wave-pulse-3" style={{ position: 'absolute', border: `4px solid ${p1Taps.length > 0 && hitCount >= 3 ? '#D4AF37' : 'rgba(255,255,255,0.1)'}`, borderRadius: 9999, width: pulseSize * 2, height: pulseSize * 2, left: '50%', top: '50%', transform: 'translate(-50%, -50%)', transition: 'all 0.15s' }} />
-            <button id="flow-btn" onClick={handleFlowTap} onTouchStart={handleFlowTap} style={{ position: 'absolute', width: 160, height: 160, borderRadius: 9999, background: 'transparent', border: 'none', cursor: 'pointer', left: '50%', top: '50%', transform: 'translate(-50%, -50%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <div style={{ fontWeight: 900, color: pulseSize >= P3_PEAK_TARGET ? '#D4AF37' : 'rgba(255,255,255,0.3)', fontSize: 18, textTransform: 'uppercase', letterSpacing: 2 }}>TAP PEAK</div>
+        <div style={{ width: '100%', maxWidth: 320 }}>
+          <h2 style={{ fontSize: 14, fontWeight: 700, marginBottom: 40, letterSpacing: 2, textTransform: 'uppercase', opacity: 0.8 }}>Hit the Peak</h2>
+          <div style={{ position: 'relative', background: 'rgba(255,255,255,0.03)', borderRadius: 24, aspectRatio: '1', marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', boxShadow: 'inset 0 0 60px rgba(0,0,0,0.5)' }}>
+            <div style={{ width: `${pulseSize}%`, height: `${pulseSize}%`, borderRadius: '50%', background: 'linear-gradient(135deg, rgba(212,175,55,0.2), rgba(212,175,55,0.05))', border: '1px solid rgba(212,175,55,0.3)', position: 'absolute' }} />
+            <button
+              onClick={handleFlowTap}
+              onTouchStart={handleFlowTap}
+              style={{ position: 'relative', zIndex: 10, width: 70, height: 70, borderRadius: '50%', background: pulseSize > 80 ? '#D4AF37' : 'rgba(255,255,255,0.1)', color: pulseSize > 80 ? '#0A0E1A' : 'rgba(255,255,255,0.5)', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, border: 'none', cursor: 'pointer', boxShadow: pulseSize > 80 ? '0 0 30px rgba(212,175,55,0.6)' : 'none', transition: 'all 0.1s', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            >
+              Tap Peak
             </button>
           </div>
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+            <div style={{ width: 40, height: 40, borderRadius: '50%', background: p3Hits.length > 0 && hitCount >= 1 ? '#D4AF37' : 'rgba(255,255,255,0.1)', transition: 'all 0.2s' }} />
+            <div style={{ width: 40, height: 40, borderRadius: '50%', background: p3Hits.length > 0 && hitCount >= 2 ? '#D4AF37' : 'rgba(255,255,255,0.1)', transition: 'all 0.2s' }} />
+            <div style={{ width: 40, height: 40, borderRadius: '50%', background: p3Hits.length >= 3 ? '#D4AF37' : 'rgba(255,255,255,0.1)', transition: 'all 0.2s' }} />
+          </div>
         </div>
       )}
-
-      {/* SCORE SCREEN */}
       {screen === 'score' && (
-        <div style={{ width: '100%', maxWidth: 400, textAlign: 'center', margin: '0 auto' }}>
-          <div style={{ marginBottom: 32 }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 80, height: 80, borderRadius: 9999, background: 'rgba(212,175,55,0.1)', boxShadow: '0 0 40px rgba(212,175,55,0.3)', marginBottom: 16 }}>
-              <span style={{ fontSize: 40, fontWeight: 700, color: '#D4AF37', letterSpacing: -2 }}>π</span>
-            </div>
+        <div style={{ width: '100%', maxWidth: 320 }}>
+          <div style={{ marginBottom: 8 }}>
+            <span style={{ fontSize: 24, fontWeight: 900, color: '#D4AF37', textShadow: '0 0 20px rgba(212,175,55,0.5)' }}>
+              &#960;
+            </span>
           </div>
-          <p style={{ fontSize: 11, color: '#D4AF37', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 8 }}>Your Index Score</p>
-          <h1 style={{ fontSize: 64, fontWeight: 900, color: '#D4AF37', marginBottom: 24 }}>{finalScore}</h1>
-          <h3 style={{ fontSize: 14, fontWeight: 700, color: 'white', marginBottom: 8 }}>{verdict.title}</h3>
-          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)', lineHeight: 1.6, marginBottom: 32 }}>{verdict.body}</p>
-          <div style={{ background: 'rgba(255,255,255,0.05)', padding: 24, borderRadius: 16, marginBottom: 24 }}>
-            <p style={{ fontSize: 10, color: '#D4AF37', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 2, marginBottom: 16 }}>Unlock The Regulate Game</p>
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Enter your email..." style={{ width: '100%', background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 9999, padding: '16px 24px', fontSize: 12, marginBottom: 12, outline: 'none', color: 'white', boxSizing: 'border-box' }} />
-            <button onClick={() => { if(!email.includes('@')) { alert('Need email to calibrate!'); return; } setScreen('reg'); }} style={{ width: '100%', background: '#D4AF37', color: '#0A0E1A', fontWeight: 900, padding: '16px', borderRadius: 9999, fontSize: 10, textTransform: 'uppercase', letterSpacing: 2, border: 'none', cursor: 'pointer' }}>CALIBRATE REGULATION</button>
-          </div>
-          <button onClick={() => { setScreen('landing'); setP1Taps([]); setP2Taps([]); setP3Hits([]); }} style={{ fontSize: 10, opacity: 0.4, textTransform: 'uppercase', letterSpacing: 2, textDecoration: 'underline', background: 'none', border: 'none', color: 'inherit', cursor: 'pointer' }}>Recalibrate Baseline</button>
-        </div>
-      )}
-
-      {/* REGULATION SCREEN */}
-      {screen === 'reg' && (
-        <div style={{ width: '100%', maxWidth: 400, textAlign: 'center', margin: '0 auto' }}>
-          <h3 style={{ fontSize: 12, letterSpacing: 4, color: '#D4AF37', fontWeight: 700, marginBottom: 8 }}>REGULATION MODE</h3>
-          <p style={{ fontSize: 10, color: '#D4AF37', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 32 }}>{regCycles} /3 CYCLES</p>
-          <div style={{ position: 'relative', width: 256, height: 256, margin: '0 auto 32px' }}>
-            <div id="bubble-outer" style={{ position: 'absolute', border: `2px solid ${isRegActive ? '#D4AF37' : 'rgba(212,175,55,0.2)'}`, borderRadius: 9999, width: 240, height: 240, left: 8, top: 8, opacity: isRegActive ? 1 : 0.3 }} />
-            <div id="bubble-inner" style={{ position: 'absolute', background: isRegActive ? '#D4AF37' : 'rgba(212,175,55,0.2)', borderRadius: 9999, width: bubbleScale * 60, height: bubbleScale * 60, left: '50%', top: '50%', transform: 'translate(-50%, -50%)', transition: `width ${bubbleTime}, height ${bubbleTime}`, boxShadow: isRegActive ? '0 0 40px rgba(212,175,55,0.5)' : 'none' }} />
-          </div>
-          <p style={{ fontSize: 10, color: '#D4AF37', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 2, marginBottom: 8 }}>{regInstruction}</p>
-          <p style={{ fontSize: 10, color: '#D4AF37', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 2, marginBottom: 16 }}>{bubbleTime}</p>
-          <button onClick={regPhase==='ready'?startRegGame:regPhase==='inhale'?handleRegUp:handleRegDown} onTouchStart={regPhase==='ready'?startRegGame:regPhase==='inhale'?handleRegUp:handleRegDown} style={{ width: 160, height: 160, borderRadius: 9999, background: 'rgba(212,175,55,0.1)', border: `2px solid ${isRegActive ? '#D4AF37' : 'rgba(212,175,55,0.3)'}`, color: '#D4AF37', fontWeight: 900, cursor: 'pointer', margin: '0 auto', display: 'block' }}>
-            <div style={{ fontSize: 10 }}>{regPhase==='ready'?'PRESS TO BEGIN':isRegActive?'INH...E':'REGULATE'}</div>
-            <div style={{ fontSize: 9, opacity: 0.6 }}>{isRegActive?'Follow the bubble rhythm':regPhase==='ready'?'Ready to begin?':'Press button to start'}</div>
+          <p style={{ fontSize: 8, letterSpacing: 2, textTransform: 'uppercase', marginBottom: 24, opacity: 0.6 }}>Your Index Score</p>
+          <h1 style={{ fontSize: 48, fontWeight: 900, marginBottom: 16, color: '#D4AF37' }}>{finalScore}</h1>
+          <h2 style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', marginBottom: 8 }}>{verdict.title}</h2>
+          <p style={{ fontSize: 10, opacity: 0.6, marginBottom: 32 }}>{verdict.body}</p>
+          <p style={{ fontSize: 8, textTransform: 'uppercase', letterSpacing: 1, opacity: 0.4, marginBottom: 12 }}>Unlock The Regulate Game</p>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Enter your email..."
+            style={{ width: '100%', background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 9999, padding: '16px 24px', fontSize: 12, marginBottom: 12, outline: 'none', color: 'white', boxSizing: 'border-box' }}
+          />
+          <button
+            onClick={() => {
+              if (!email.includes('@')) {
+                alert('Need email to calibrate!');
+                return;
+              }
+              setScreen('reg');
+            }}
+            onTouchStart={() => {
+              if (!email.includes('@')) {
+                alert('Need email to calibrate!');
+                return;
+              }
+              setScreen('reg');
+            }}
+            style={{ width: '100%', background: '#D4AF37', color: '#0A0E1A', fontWeight: 900, padding: 16, borderRadius: 9999, fontSize: 10, textTransform: 'uppercase', letterSpacing: 2, border: 'none', cursor: 'pointer', boxShadow: '0 4px 20px rgba(212,175,55,0.3)' }}
+          >
+            Calibrate Regulation
+          </button>
+          <button
+            onClick={() => { setScreen('landing'); setP1Taps([]); setP2Taps([]); setP3Hits([]); }}
+            onTouchStart={() => { setScreen('landing'); setP1Taps([]); setP2Taps([]); setP3Hits([]); }}
+            style={{ marginTop: 16, fontSize: 10, opacity: 0.4, textTransform: 'uppercase', letterSpacing: 2, textDecoration: 'underline', background: 'none', border: 'none', color: 'inherit', cursor: 'pointer' }}
+          >
+            Recalibrate Baseline
           </button>
         </div>
       )}
-
-      {/* WIN SCREEN */}
-      {screen === 'win' && (
-        <div style={{ width: '100%', maxWidth: 400, textAlign: 'center', margin: '0 auto' }}>
-          <div style={{ marginBottom: 32 }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 80, height: 80, borderRadius: 9999, background: 'rgba(212,175,55,0.1)', boxShadow: '0 0 40px rgba(212,175,55,0.3)' }}>
-              <span style={{ fontSize: 40, fontWeight: 700, color: '#D4AF37', letterSpacing: -2 }}>π</span>
-            </div>
+      {screen === 'reg' && (
+        <div style={{ width: '100%', maxWidth: 320 }}>
+          <h2 style={{ fontSize: 12, fontWeight: 700, marginBottom: 8, letterSpacing: 2, textTransform: 'uppercase', opacity: 0.8 }}>Regulation Mode</h2>
+          <p style={{ fontSize: 8, opacity: 0.4, marginBottom: 32 }}>{regCycles}/3 CYCLES</p>
+          <div style={{ position: 'relative', background: 'rgba(255,255,255,0.03)', borderRadius: 24, aspectRatio: '1', marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', boxShadow: 'inset 0 0 60px rgba(0,0,0,0.5)' }}>
+            <div style={{ width: 60, height: 60, borderRadius: '50%', background: '#D4AF37', transition: `transform ${bubbleTime} ease-in-out`, transform: `scale(${bubbleScale})`, boxShadow: '0 0 40px rgba(212,175,55,0.4)' }} />
           </div>
-          <p style={{ fontSize: 11, color: '#D4AF37', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 8 }}>SYSTEM CALIBRATED</p>
-          <h1 style={{ fontSize: 64, fontWeight: 900, color: '#D4AF37', marginBottom: 16 }}>{finalScore}</h1>
-          <h3 style={{ fontSize: 14, fontWeight: 700, color: 'white', marginBottom: 24 }}>MASTER INDEX</h3>
-          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)', lineHeight: 1.6, marginBottom: 32 }}>Your Prana Index has been calibrated. Regulation training complete.</p>
-          <button onClick={() => { setScreen('landing'); setP1Taps([]); setP2Taps([]); setP3Hits([]); }} style={{ fontSize: 10, opacity: 0.4, textTransform: 'uppercase', letterSpacing: 2, textDecoration: 'underline', background: 'none', border: 'none', color: 'inherit', cursor: 'pointer' }}>Return to Home</button>
+          <div style={{ fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', marginBottom: 8, opacity: 0.8 }}>{regInstruction}</div>
+          <div style={{ fontSize: 24, fontWeight: 300, marginBottom: 24 }}>{bubbleTime}</div>
+          <button
+            onClick={() => { regPhase === 'ready' ? handleRegDown() : handleRegUp(); }}
+            onTouchStart={() => { regPhase === 'ready' ? handleRegDown() : handleRegUp(); }}
+            style={{ width: '100%', background: regPhase === 'ready' ? '#D4AF37' : '#00B4D8', color: '#0A0E1A', fontWeight: 700, padding: 16, borderRadius: 9999, fontSize: 10, textTransform: 'uppercase', letterSpacing: 2, border: 'none', cursor: 'pointer', boxShadow: '0 4px 20px rgba(212,175,55,0.3)' }}
+          >
+            {regPhase === 'ready' ? 'PRESS TO BEGIN' : isRegActive ? 'INHALE' : 'EXHALE'}
+          </button>
+          <p style={{ fontSize: 8, opacity: 0.4, marginTop: 16 }}>{isRegActive ? 'Follow the bubble rhythm' : regPhase === 'ready' ? 'Ready to begin?' : 'Press button to start'}</p>
         </div>
       )}
-    </div>
+      {screen === 'win' && (
+        <div style={{ width: '100%', maxWidth: 320 }}>
+          <div style={{ marginBottom: 8 }}>
+            <span style={{ fontSize: 24, fontWeight: 900, color: '#D4AF37', textShadow: '0 0 20px rgba(212,175,55,0.5)' }}>
+              &#960;
+            </span>
+          </div>
+          <p style={{ fontSize: 8, letterSpacing: 2, textTransform: 'uppercase', marginBottom: 24, opacity: 0.6 }}>System Calibrated</p>
+          <h1 style={{ fontSize: 48, fontWeight: 900, marginBottom: 8, color: '#D4AF37' }}>{finalScore}</h1>
+          <h2 style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 16, opacity: 0.6 }}>Master Index</h2>
+          <p style={{ fontSize: 10, opacity: 0.6, marginBottom: 32 }}>Your Prana Index has been calibrated. Regulation training complete.</p>
+          <button
+            onClick={() => { setScreen('landing'); setP1Taps([]); setP2Taps([]); setP3Hits([]); }}
+            onTouchStart={() => { setScreen('landing'); setP1Taps([]); setP2Taps([]); setP3Hits([]); }}
+            style={{ width: '100%', background: '#D4AF37', color: '#0A0E1A', fontWeight: 900, padding: 16, borderRadius: 9999, fontSize: 10, textTransform: 'uppercase', letterSpacing: 2, border: 'none', cursor: 'pointer' }}
+          >
+            Return to Home
+          </button>
+        </div>
+      )}
+    </main>
   );
 }
