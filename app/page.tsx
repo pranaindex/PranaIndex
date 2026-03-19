@@ -53,9 +53,9 @@ export default function PranaIndexApp() {
       if (pulseRef.current) cancelAnimationFrame(pulseRef.current);
     }
     return () => {
-      if (phaseTimerRef.current) clearInterval(phaseTimerRef.current);
-      if (p1TimerRef.current) clearInterval(p1TimerRef.current);
-      if (pulseRef.current) cancelAnimationFrame(pulseRef.current);
+      if (pscreen !== 'reg' && haseTimerRef.current) clearInterval(phaseTimerRef.current);
+      if (pscreen !== 'p1' && 1TimerRef.current) clearInterval(p1TimerRef.current);
+      if (pscreen !== 'p3' && ulseRef.current) cancelAnimationFrame(pulseRef.current);
     };
   }, [screen]);
 
