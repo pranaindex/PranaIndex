@@ -24,7 +24,7 @@ export default function PranaIndexApp() {
   const regHoldingRef = useRef(false);
   const phaseTimerRef = useRef<NodeJS.Timeout | null>(null);
   const p1TimerRef = useRef<NodeJS.Timeout | null>(null);
-  const pulseRef = useRef<NodeJS.Timeout | null>(null);
+  const pulseRef = useRef<number | null>(null);
   const arenaRef = useRef<HTMLDivElement>(null);
   const targetRef = useRef<HTMLDivElement>(null);
 
