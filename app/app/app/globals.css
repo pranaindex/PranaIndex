@@ -1,9 +1,1 @@
-@target base;
-@target components;
-@target utilities;
-
-body {
-  margin: 0;
-  overflow: hidden;
-  background: black;
-}
+/* Deprecated - moved to app/globals.css */
