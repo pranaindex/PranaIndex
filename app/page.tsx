@@ -5,22 +5,25 @@ export default function PranaIndex() {
   const [screen, setScreen] = useState('landing');
   const [email, setEmail] = useState('');
   
-  // Game States
+  // Game Performance Tracking
   const [p1Taps, setP1Taps] = useState<number[]>([]);
-  const [p2Taps, setP2Taps] = useState<number[]>([]);
-  const [hitCount, setHitCount] = useState(0);
+  const [p2StartTime, setP2StartTime] = useState(0);
+  const [p3Hits, setP3Hits] = useState<number[]>([]); // Stores pulseSize at time of tap
+  
+  // UI States
+  const [p1TimeLeft, setP1TimeLeft] = useState(15);
   const [pulseSize, setPulseSize] = useState(0);
   const [pulseDir, setPulseDir] = useState(1);
-  const [p1TimeLeft, setP1TimeLeft] = useState(15);
   const [isTapping, setIsTapping] = useState(false);
+  const [p2Count, setP2Count] = useState(0);
   const [finalScore, setFinalScore] = useState(0);
   
   // Regulation States
-  const [regPhase, setRegPhase] = useState('IDLE'); // IDLE, INHALE, HOLD, EXHALE, DONE
+  const [regPhase, setRegPhase] = useState('READY'); 
   const [regTimer, setRegTimer] = useState(5.0);
   const [regCycles, setRegCycles] = useState(0);
 
-  // Refs
+  // Audio/Visual Refs
   const audioCtx = useRef<AudioContext | null>(null);
   const rainAudio = useRef<HTMLAudioElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -28,7 +31,7 @@ export default function PranaIndex() {
   const engineOsc = useRef<OscillatorNode | null>(null);
   const engineGain = useRef<GainNode | null>(null);
 
-  // --- 1. RAIN ANIMATION ---
+  // --- 1. RAIN ANIMATION (STAYS ACTIVE) ---
   useEffect(() => {
     if (!canvasRef.current) return;
     const canvas = canvasRef.current;
@@ -37,10 +40,10 @@ export default function PranaIndex() {
     resize();
     window.addEventListener('resize', resize);
     let drops: any[] = [];
-    for (let i = 0; i < 150; i++) drops.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, l: Math.random() * 20, v: Math.random() * 4 + 2 });
+    for (let i = 0; i < 150; i++) drops.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, l: Math.random() * 25, v: Math.random() * 5 + 3 });
     const animate = () => {
       ctx.fillStyle = 'rgba(10, 14, 26, 0.2)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)'; ctx.lineWidth = 1;
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)'; ctx.lineWidth = 1;
       drops.forEach(d => { ctx.beginPath(); ctx.moveTo(d.x, d.y); ctx.lineTo(d.x, d.y + d.l); ctx.stroke(); d.y += d.v; if (d.y > canvas.height) d.y = -20; });
       requestAnimationFrame(animate);
     };
@@ -49,11 +52,11 @@ export default function PranaIndex() {
   }, []);
 
   // --- 2. SOUND SYSTEM ---
-  const initSystems = () => {
+  const startAtmosphere = () => {
     if (!rainAudio.current) {
       rainAudio.current = new Audio("https://www.soundjay.com/nature/rain-01.mp3");
       rainAudio.current.loop = true;
-      rainAudio.current.volume = 0.3;
+      rainAudio.current.volume = 0.4;
     }
     rainAudio.current.play();
     if (!audioCtx.current) audioCtx.current = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -72,217 +75,243 @@ export default function PranaIndex() {
     o.start(); o.stop(audioCtx.current.currentTime + d);
   };
 
-  const startEngineSound = (freq: number) => {
+  const setEngineRev = (freq: number, vol: number) => {
     if (!audioCtx.current) return;
-    stopEngineSound();
-    engineOsc.current = audioCtx.current.createOscillator();
-    engineGain.current = audioCtx.current.createGain();
-    engineOsc.current.type = 'sawtooth';
-    engineOsc.current.frequency.setValueAtTime(freq, audioCtx.current.currentTime);
-    engineGain.current.gain.setValueAtTime(0.02, audioCtx.current.currentTime);
-    engineOsc.current.connect(engineGain.current);
-    engineGain.current.connect(audioCtx.current.destination);
-    engineOsc.current.start();
+    if (!engineOsc.current) {
+      engineOsc.current = audioCtx.current.createOscillator();
+      engineGain.current = audioCtx.current.createGain();
+      engineOsc.current.type = 'sawtooth';
+      engineOsc.current.connect(engineGain.current);
+      engineGain.current.connect(audioCtx.current.destination);
+      engineOsc.current.start();
+    }
+    engineOsc.current.frequency.exponentialRampToValueAtTime(freq, audioCtx.current.currentTime + 0.1);
+    engineGain.current!.gain.linearRampToValueAtTime(vol, audioCtx.current.currentTime + 0.1);
   };
 
-  const stopEngineSound = () => {
+  const stopEngine = () => {
     if (engineOsc.current) { engineOsc.current.stop(); engineOsc.current = null; }
   };
 
-  // --- 3. GAME FLOW ---
+  // --- 3. SCORE CALCULATION ---
+  const calculateFinalScore = (p2TotalTime: number) => {
+    // 1. Consistency Score (P1)
+    let intervals: number[] = [];
+    for(let i=1; i<p1Taps.length; i++) intervals.push(p1Taps[i] - p1Taps[i-1]);
+    const avg = intervals.reduce((a,b)=>a+b,0) / intervals.length;
+    const variance = intervals.reduce((a,b)=>a + Math.pow(b-avg, 2), 0) / intervals.length;
+    const consistency = Math.max(0, 100 - (Math.sqrt(variance) / 10));
+
+    // 2. Reflex Score (P2)
+    const reflex = Math.max(0, 100 - (p2TotalTime / 50));
+
+    // 3. Focus Score (P3)
+    const focus = p3Hits.reduce((a,b)=>a+b, 0) / p3Hits.length;
+
+    const final = (consistency * 0.4) + (reflex * 0.3) + (focus * 0.3);
+    setFinalScore(Math.floor(final));
+    setScreen('result');
+  };
+
+  // --- 4. GAME PHASES ---
   const startP1 = () => {
     setScreen('p1');
     let time = 15;
     const timer = setInterval(() => {
       time--; setP1TimeLeft(time);
-      if (time <= 0) { clearInterval(timer); setScreen('p2'); playTone(600, 'sine', 0.5); }
+      if (time <= 0) { 
+        clearInterval(timer); 
+        setScreen('p2'); 
+        setP2StartTime(Date.now());
+        playTone(600, 'sine', 0.5); 
+      }
     }, 1000);
   };
 
-  const handleP3Tap = () => {
-    if (pulseSize > 80) {
-      playTone(1000, 'sine', 0.2, 0.2);
-      setHitCount(h => {
-        if (h + 1 >= 3) {
-            setFinalScore(Math.floor(Math.random() * 15) + 84);
-            setTimeout(() => setScreen('result'), 500);
-        }
-        return h + 1;
-      });
-    } else {
-      playTone(100, 'sawtooth', 0.3, 0.1);
-    }
-  };
-
-  // --- 4. REGULATION LOGIC (5-3-5) ---
-  const handleRegDown = () => {
-    if (regPhase !== 'IDLE' && regPhase !== 'READY') return;
-    setIsTapping(true);
-    setRegPhase('INHALE');
-    startEngineSound(100);
-    let time = 0;
-    const int = setInterval(() => {
-        time += 0.1; setRegTimer(5 - time);
-        if (engineOsc.current) engineOsc.current.frequency.setValueAtTime(100 + (time * 40), audioCtx.current!.currentTime);
-        if (time >= 5) {
-            clearInterval(int);
-            setRegPhase('HOLD');
-            let hTime = 0;
-            const hInt = setInterval(() => {
-                hTime += 0.1; setRegTimer(3 - hTime);
-                if (hTime >= 3) {
-                    clearInterval(hInt);
-                    setRegPhase('RELEASE TO EXHALE');
-                    stopEngineSound();
-                    playTone(400, 'sine', 0.3);
-                }
-            }, 100);
-        }
-    }, 100);
-    (window as any).regInterval = int;
-  };
-
-  const handleRegUp = () => {
-    setIsTapping(false);
-    if (regPhase === 'RELEASE TO EXHALE') {
-        setRegPhase('EXHALE');
-        startEngineSound(300);
-        let eTime = 0;
-        const eInt = setInterval(() => {
-            eTime += 0.1; setRegTimer(5 - eTime);
-            if (engineOsc.current) engineOsc.current.frequency.setValueAtTime(300 - (eTime * 40), audioCtx.current!.currentTime);
-            if (eTime >= 5) {
-                clearInterval(eInt);
-                stopEngineSound();
-                setRegCycles(c => c + 1);
-                if (regCycles + 1 >= 3) setRegPhase('DONE');
-                else setRegPhase('IDLE');
-            }
-        }, 100);
-    } else if (regPhase !== 'DONE') {
-        clearInterval((window as any).regInterval);
-        stopEngineSound();
-        setRegPhase('IDLE');
-        setRegTimer(5.0);
-    }
-  };
-
+  // Phase 3 Pulse Logic
   useEffect(() => {
     if (screen === 'p3') {
-        const int = setInterval(() => {
-            setPulseSize(s => {
-                let next = s + (4 * pulseDir);
-                if (next >= 100 || next <= 0) setPulseDir(d => d * -1);
-                return next;
-            });
-        }, 20);
-        return () => clearInterval(int);
+      const int = setInterval(() => {
+        setPulseSize(s => {
+          let next = s + (3.5 * pulseDir);
+          if (next >= 100 || next <= 0) setPulseDir(d => d * -1);
+          return next;
+        });
+      }, 16);
+      return () => clearInterval(int);
     }
   }, [screen, pulseDir]);
 
+  // --- 5. REGULATION (5-3-5) ---
+  const startRegulation = () => {
+    if (regCycles >= 3) { setRegPhase('DONE'); return; }
+    
+    // INHALE
+    setRegPhase('INHALE');
+    let time = 5.0;
+    const inhaleInt = setInterval(() => {
+      time -= 0.1; setRegTimer(time);
+      setEngineRev(100 + ((5 - time) * 40), 0.05);
+      if (time <= 0) {
+        clearInterval(inhaleInt);
+        // HOLD
+        setRegPhase('HOLD');
+        setEngineRev(300, 0.02);
+        let hTime = 3.0;
+        const holdInt = setInterval(() => {
+          hTime -= 0.1; setRegTimer(hTime);
+          if (hTime <= 0) {
+            clearInterval(holdInt);
+            // EXHALE
+            setRegPhase('EXHALE');
+            let eTime = 5.0;
+            const exhaleInt = setInterval(() => {
+              eTime -= 0.1; setRegTimer(eTime);
+              setEngineRev(300 - ((5 - eTime) * 40), 0.05);
+              if (eTime <= 0) {
+                clearInterval(exhaleInt);
+                stopEngine();
+                setRegCycles(c => c + 1);
+                setRegPhase('READY');
+              }
+            }, 100);
+          }
+        }, 100);
+      }
+    }, 100);
+  };
+
+  useEffect(() => {
+    if (screen === 'reg' && regPhase === 'READY' && regCycles < 3) {
+      setTimeout(startRegulation, 1000);
+    }
+  }, [screen, regPhase]);
+
   return (
-    <div style={{ backgroundColor: '#0A0E1A', color: 'white', minHeight: '100vh', touchAction: 'none', overflow: 'hidden', position: 'relative', fontFamily: 'sans-serif' }}>
+    <div style={{ backgroundColor: '#0A0E1A', color: 'white', minHeight: '100vh', touchAction: 'none', overflow: 'hidden', position: 'relative', fontFamily: 'Inter, sans-serif' }}>
       <canvas ref={canvasRef} style={{ position: 'absolute', top: 0, left: 0, zIndex: 1 }} />
       
-      <div style={{ position: 'relative', zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
+      {/* PERSISTENT HEADER */}
+      {screen !== 'landing' && (
+        <div style={{ position: 'absolute', top: '30px', width: '100%', textAlign: 'center', zIndex: 20 }}>
+           <div style={{ fontSize: '22px', fontWeight: 900, color: '#D4AF37', fontStyle: 'italic', letterSpacing: '2px' }}>PRANA INDEX</div>
+        </div>
+      )}
+
+      <div style={{ position: 'relative', zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', padding: '20px' }}>
         
         {screen === 'landing' && (
           <div style={{ textAlign: 'center' }}>
-            <img src="/gold-pi-logo.png" style={{ width: '220px', marginBottom: '20px' }} />
-            <p style={{ color: '#D4AF37', fontSize: '24px', fontWeight: 900, fontStyle: 'italic' }}>Play your rhythm</p>
-            <p style={{ letterSpacing: '2px', marginBottom: '40px' }}>CHECK YOUR PI STRESS SCORE</p>
-            <button onClick={initSystems} style={{ border: '2px solid #D4AF37', color: '#D4AF37', padding: '15px 50px', borderRadius: '50px', background: 'none', fontSize: '20px', fontWeight: 900 }}>START</button>
+            <img src="/gold-pi-logo.png" style={{ width: '220px', marginBottom: '10px' }} />
+            <h1 style={{ fontSize: '14px', letterSpacing: '8px', color: 'white', marginBottom: '40px' }}>PRANA INDEX</h1>
+            <p style={{ color: '#D4AF37', fontSize: '24px', fontWeight: 900, fontStyle: 'italic', marginBottom: '10px' }}>Play your rhythm</p>
+            <p style={{ letterSpacing: '1px', marginBottom: '60px', opacity: 0.8 }}>CHECK YOUR PI STRESS SCORE</p>
+            <button onClick={startAtmosphere} style={{ border: '2px solid #D4AF37', color: '#D4AF37', padding: '15px 60px', borderRadius: '50px', background: 'none', fontSize: '20px', fontWeight: 900, cursor: 'pointer' }}>START</button>
           </div>
         )}
 
-        {screen !== 'landing' && <div style={{ position: 'absolute', top: '40px', fontSize: '24px', fontWeight: 900, color: '#D4AF37', fontStyle: 'italic' }}>PRANA INDEX</div>}
-
         {screen === 'details' && (
           <div style={{ textAlign: 'center', maxWidth: '320px' }}>
-            <div style={{ background: 'rgba(255,255,255,0.05)', padding: '25px', borderRadius: '30px', border: '1px solid #ffffff22', textAlign: 'left', marginTop: '40px' }}>
-              <p style={{ fontSize: '12px', marginBottom: '10px' }}><span style={{ color: '#D4AF37', fontWeight: 900 }}>01 CONSISTENCY:</span> Tap the white node steadily.</p>
-              <p style={{ fontSize: '12px', marginBottom: '10px' }}><span style={{ color: '#D4AF37', fontWeight: 900 }}>02 REFLUX:</span> Catch 5 nodes fast.</p>
-              <p style={{ fontSize: '12px' }}><span style={{ color: '#D4AF37', fontWeight: 900 }}>03 FOCUS:</span> Tap at the peak pulse.</p>
+            <div style={{ background: 'rgba(255,255,255,0.05)', padding: '30px', borderRadius: '30px', border: '1px solid #ffffff11', textAlign: 'left' }}>
+              <p style={{ fontSize: '12px', marginBottom: '15px' }}><span style={{ color: '#D4AF37', fontWeight: 900 }}>01 CONSISTENCY:</span> Tap the white node steadily for 15s.</p>
+              <p style={{ fontSize: '12px', marginBottom: '15px' }}><span style={{ color: '#D4AF37', fontWeight: 900 }}>02 REFLUX:</span> Catch the nodes as fast as you can.</p>
+              <p style={{ fontSize: '12px' }}><span style={{ color: '#D4AF37', fontWeight: 900 }}>03 FOCUS:</span> Hit the peak when the pulse turns green.</p>
             </div>
-            <button onClick={startP1} style={{ marginTop: '30px', backgroundColor: '#D4AF37', color: 'black', padding: '20px 60px', borderRadius: '50px', fontWeight: 900, border: 'none' }}>START ENGINE</button>
+            <button onClick={startP1} style={{ marginTop: '40px', backgroundColor: '#D4AF37', color: 'black', padding: '20px 60px', borderRadius: '50px', fontWeight: 900, border: 'none', cursor: 'pointer' }}>START ENGINE</button>
           </div>
         )}
 
         {screen === 'p1' && (
           <div style={{ textAlign: 'center' }}>
-            <p style={{ color: '#D4AF37', letterSpacing: '2px', marginBottom: '10px' }}>PHASE 01: CONSISTENCY</p>
-            <p style={{ fontSize: '40px', fontWeight: 900, marginBottom: '20px' }}>{p1TimeLeft}s</p>
+            <p style={{ color: '#D4AF37', letterSpacing: '2px', marginBottom: '20px' }}>PHASE 01: CONSISTENCY</p>
+            <div style={{ fontSize: '50px', fontWeight: 900, marginBottom: '30px' }}>{p1TimeLeft}<span style={{fontSize: '20px'}}>s</span></div>
             <div 
-              onPointerDown={() => { setIsTapping(true); handleP1Tap(); playTone(200, 'sine', 0.1); }}
+              onPointerDown={() => { setIsTapping(true); setP1Taps([...p1Taps, Date.now()]); playTone(200, 'sine', 0.1); }}
               onPointerUp={() => setIsTapping(false)}
               style={{ 
                 width: '200px', height: '200px', backgroundColor: 'white', borderRadius: '50%', 
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                transform: isTapping ? 'scale(0.9)' : 'scale(1)', transition: '0.1s',
-                boxShadow: isTapping ? '0 0 80px white' : '0 0 20px rgba(255,255,255,0.2)'
+                transform: isTapping ? 'scale(0.92)' : 'scale(1)', transition: '0.1s',
+                boxShadow: isTapping ? '0 0 60px white' : '0 0 20px rgba(255,255,255,0.2)'
               }}
             >
               <img src="/gold-pi-logo.png" style={{ width: '120px' }} />
             </div>
+            <p style={{ marginTop: '40px', opacity: 0.6, fontSize: '12px' }}>MAINTAIN A STEADY RHYTHM</p>
           </div>
         )}
 
         {screen === 'p2' && (
           <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>
-             <p style={{ position: 'absolute', top: '100px', width: '100%', textAlign: 'center', color: '#D4AF37' }}>PHASE 02: REFLUX</p>
+             <p style={{ position: 'absolute', top: '120px', width: '100%', textAlign: 'center', color: '#D4AF37', fontSize: '12px' }}>PHASE 02: REFLUX ({p2Count}/5)</p>
              <button 
                 onPointerDown={() => {
                     playTone(800, 'triangle', 0.1);
-                    if(p2Taps.length + 1 >= 5) setScreen('p3');
-                    else {
-                        setP2Taps([...p2Taps, 1]);
+                    if(p2Count + 1 >= 5) {
+                        calculateFinalScore(Date.now() - p2StartTime);
+                        setScreen('p3');
+                    } else {
+                        setP2Count(c => c + 1);
                         targetPos.current = { left: Math.random()*70+15+'%', top: Math.random()*70+15+'%' };
                     }
                 }}
-                style={{ position: 'absolute', left: targetPos.current.left, top: targetPos.current.top, width: '80px', height: '80px', borderRadius: '50%', backgroundColor: '#D4AF37', color: 'black', fontWeight: 900, border: 'none' }}
+                style={{ position: 'absolute', left: targetPos.current.left, top: targetPos.current.top, width: '80px', height: '80px', borderRadius: '50%', backgroundColor: '#D4AF37', color: 'black', fontWeight: 900, border: 'none', cursor: 'pointer' }}
              >π</button>
           </div>
         )}
 
         {screen === 'p3' && (
           <div style={{ textAlign: 'center' }}>
-            <p style={{ color: '#D4AF37', marginBottom: '40px' }}>PHASE 03: FOCUS ({hitCount}/3)</p>
-            <div style={{ width: '250px', height: '250px', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <div style={{ position: 'absolute', width: pulseSize+'%', height: pulseSize+'%', borderRadius: '50%', backgroundColor: pulseSize > 80 ? '#39FF14' : '#D4AF37', opacity: 0.5 }}></div>
-                <button onPointerDown={handleP3Tap} style={{ zIndex: 10, width: '100px', height: '100px', borderRadius: '50%', backgroundColor: 'black', border: '3px solid #D4AF37', color: '#D4AF37', fontWeight: 900 }}>TAP</button>
+            <p style={{ color: '#D4AF37', marginBottom: '50px', fontSize: '12px' }}>PHASE 03: FOCUS ({p3Hits.length}/3)</p>
+            <div style={{ width: '280px', height: '280px', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ position: 'absolute', width: pulseSize+'%', height: pulseSize+'%', borderRadius: '50%', backgroundColor: pulseSize > 85 ? '#39FF14' : '#D4AF37', opacity: pulseSize > 85 ? 0.8 : 0.4, transition: 'background-color 0.1s' }}></div>
+                <button onPointerDown={() => {
+                    setP3Hits([...p3Hits, pulseSize]);
+                    if (pulseSize > 85) playTone(1200, 'sine', 0.2, 0.2); else playTone(100, 'sawtooth', 0.2);
+                    if (p3Hits.length + 1 >= 3) {
+                       const reflexTime = Date.now() - p2StartTime;
+                       calculateFinalScore(reflexTime);
+                    }
+                }} style={{ zIndex: 10, width: '110px', height: '110px', borderRadius: '50%', backgroundColor: 'black', border: '3px solid #D4AF37', color: '#D4AF37', fontWeight: 900, cursor: 'pointer' }}>TAP PEAK</button>
             </div>
           </div>
         )}
 
         {screen === 'result' && (
-          <div style={{ textAlign: 'center' }}>
-            <h3 style={{ fontSize: '100px', fontWeight: 900, color: '#D4AF37', margin: 0 }}>{finalScore}</h3>
-            <p style={{ fontWeight: 900, color: '#D4AF37', fontSize: '20px' }}>USTAAD! FULL POWER!</p>
-            <input placeholder="Email to Regulate..." value={email} onChange={e=>setEmail(e.target.value)} style={{ width: '100%', padding: '15px', borderRadius: '50px', border: '1px solid #D4AF37', background: 'none', color: 'white', textAlign: 'center', margin: '20px 0' }} />
-            <button onClick={() => setScreen('reg')} style={{ backgroundColor: '#D4AF37', color: 'black', padding: '15px 40px', borderRadius: '50px', fontWeight: 900, border: 'none' }}>CALIBRATE</button>
+          <div style={{ textAlign: 'center', animation: 'fadeIn 1s' }}>
+            <p style={{ fontSize: '12px', color: '#D4AF37', letterSpacing: '3px' }}>STRESS SCORE</p>
+            <h3 style={{ fontSize: '130px', fontWeight: 900, color: '#D4AF37', margin: '10px 0', lineHeight: 1 }}>{finalScore}</h3>
+            <p style={{ fontWeight: 900, color: 'white', fontSize: '18px', marginBottom: '40px' }}>
+              {finalScore > 90 ? "USTAAD! SUPREME FOCUS" : finalScore > 75 ? "ELITE COHERENCE" : "CALIBRATION NEEDED"}
+            </p>
+            <input placeholder="Email to Regulate..." value={email} onChange={e=>setEmail(e.target.value)} style={{ width: '100%', padding: '20px', borderRadius: '50px', border: '1px solid #D4AF37', background: 'rgba(255,255,255,0.05)', color: 'white', textAlign: 'center', marginBottom: '20px' }} />
+            <button onClick={() => { setRegPhase('READY'); setScreen('reg'); }} style={{ backgroundColor: '#D4AF37', color: 'black', padding: '18px 50px', borderRadius: '50px', fontWeight: 900, border: 'none', width: '100%', cursor: 'pointer' }}>CALIBRATE REGULATION</button>
           </div>
         )}
 
         {screen === 'reg' && (
           <div style={{ textAlign: 'center' }}>
-            <p style={{ color: '#D4AF37', fontSize: '24px', fontWeight: 900 }}>{regPhase}</p>
-            <h2 style={{ fontSize: '60px', margin: '10px 0' }}>{regTimer.toFixed(1)}s</h2>
-            <div 
-              onPointerDown={handleRegDown} onPointerUp={handleRegUp}
-              style={{ 
-                width: '200px', height: '200px', borderRadius: '50%', border: '4px solid #D4AF37', 
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                backgroundColor: isTapping ? '#D4AF37' : 'transparent', transition: '0.2s'
-              }}
-            >
-                <div style={{ color: isTapping ? 'black' : '#D4AF37', fontWeight: 900 }}>{isTapping ? 'REV' : 'HOLD'}</div>
+            <p style={{ color: '#D4AF37', fontSize: '28px', fontWeight: 900, fontStyle: 'italic', marginBottom: '10px' }}>{regPhase}</p>
+            <div style={{ fontSize: '80px', fontWeight: 900, marginBottom: '40px' }}>{regTimer.toFixed(1)}<span style={{fontSize: '20px'}}>s</span></div>
+            
+            <div style={{ width: '250px', height: '250px', borderRadius: '50%', border: '2px solid rgba(212,175,55,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+                <div style={{ 
+                  width: '100px', height: '100px', borderRadius: '50%', backgroundColor: '#D4AF37',
+                  transform: regPhase === 'INHALE' ? `scale(${1 + (5-regTimer)*0.3})` : regPhase === 'EXHALE' ? `scale(${2.5 - (5-regTimer)*0.3})` : 'scale(1)',
+                  transition: '0.1s linear', boxShadow: '0 0 50px rgba(212,175,55,0.4)'
+                }}></div>
             </div>
-            <p style={{ marginTop: '20px' }}>CYCLE {regCycles} / 3</p>
-            {regPhase === 'DONE' && <button onClick={() => window.location.reload()} style={{ color: '#39FF14', textDecoration: 'underline', marginTop: '20px', background: 'none', border: 'none' }}>COHERENCE ACHIEVED - RESTART</button>}
+            
+            <p style={{ marginTop: '50px', letterSpacing: '2px', color: '#D4AF37' }}>CYCLE {regCycles + 1} / 3</p>
+            {regPhase === 'DONE' && <button onClick={() => window.location.reload()} style={{ color: '#39FF14', fontWeight: 900, textDecoration: 'underline', marginTop: '30px', background: 'none', border: 'none', cursor: 'pointer' }}>COHERENCE ACHIEVED - RESTART</button>}
           </div>
         )}
 
       </div>
+      <style jsx global>{`
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;700;900&display=swap');
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+      `}</style>
     </div>
   );
 }
