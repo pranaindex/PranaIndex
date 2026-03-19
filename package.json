@@ -7,10 +7,15 @@
     "build": "next build",
     "start": "next start"
   },
- "dependencies": {
+  "dependencies": {
     "next": "16.2.0",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "lucide-react": "latest"
-    }
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "@types/react": "^19.0.0",
+    "@types/node": "^22.0.0"
+  }
 }
