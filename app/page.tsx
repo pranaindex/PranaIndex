@@ -53,9 +53,9 @@ export default function PranaIndexApp() {
       if (pulseRef.current) cancelAnimationFrame(pulseRef.current);
     }
     return () => {
-      if (pscreen !== 'reg' && haseTimerRef.current) clearInterval(phaseTimerRef.current);
-      if (pscreen !== 'p1' && 1TimerRef.current) clearInterval(p1TimerRef.current);
-      if (pscreen !== 'p3' && ulseRef.current) cancelAnimationFrame(pulseRef.current);
+      if (screen !== 'reg' && phaseTimerRef.current) clearInterval(phaseTimerRef.current);
+      if (screen !== 'p1' && p1TimerRef.current) clearInterval(p1TimerRef.current);
+      if (screen !== 'p3' && pulseRef.current) cancelAnimationFrame(pulseRef.current);
     };
   }, [screen]);
 
@@ -247,9 +247,7 @@ export default function PranaIndexApp() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #000000 0%, #1a0033 50%, #000000 100%)', color: 'white', fontFamily: 'system-ui, sans-serif', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px', position: 'relative', overflow: 'hidden' }}>
-      {/* Neural Network Background */}
-      <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 50% 50%, rgba(212,175,55,0.1) 0%, transparent 50%)', pointerEvents: 'none' }} />
+    <div style={{ fontFamily: 'system-ui, sans-serif', background: '#000', minHeight: '100vh', color: '#fff', padding: 20, position: 'relative', overflow: 'hidden' }}>
 
       {/* Home Button */}
       {screen !== 'landing' && (
@@ -258,144 +256,131 @@ export default function PranaIndexApp() {
 
       {/* LANDING SCREEN */}
       {screen === 'landing' && (
-        <div style={{ textAlign: 'center', zIndex: 10 }}>
-          <h1 style={{ fontSize: 48, fontWeight: 900, marginBottom: 8, background: 'linear-gradient(135deg, #D4AF37, #FFE135)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', textTransform: 'uppercase', letterSpacing: 4 }}>Prana Index</h1>
-          <p style={{ fontSize: 18, color: '#fff8', marginBottom: 40 }}>STRESS TEST SYSTEM v1.0</p>
-          <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 20, padding: 32, maxWidth: 500, border: '1px solid rgba(212,175,55,0.3)' }}>
-            <div style={{ marginBottom: 24, textAlign: 'left' }}>
-              <h3 style={{ color: '#D4AF37', fontSize: 14, marginBottom: 8, letterSpacing: 2 }}>PHASE 01 — RHYTHM</h3>
-              <p style={{ color: '#fff8', fontSize: 13 }}>Tap a steady beat for 15 seconds. Dont stop clicking!</p>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', textAlign: 'center' }}>
+          <h1 style={{ fontSize: 'clamp(2.5rem, 8vw, 5rem)', background: 'linear-gradient(135deg, #D4AF37, #FFE135)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', marginBottom: 8 }}>Prana Index</h1>
+          <p style={{ color: '#D4AF37', fontSize: 14, letterSpacing: 3, marginBottom: 40 }}>STRESS TEST SYSTEM v1.0</p>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20, marginBottom: 40, width: '100%', maxWidth: 400 }}>
+            <div style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 12, padding: '16px 24px' }}>
+              <h3 style={{ color: '#D4AF37', margin: '0 0 8px 0', fontSize: 24 }}>PHASE 01 — RHYTHM</h3>
+              <p style={{ margin: 0, color: '#888', fontSize: 14 }}>Tap a steady beat for 15 seconds. Dont stop clicking!</p>
             </div>
-            <div style={{ marginBottom: 24, textAlign: 'left' }}>
-              <h3 style={{ color: '#39FF14', fontSize: 14, marginBottom: 8, letterSpacing: 2 }}>PHASE 02 — AGILITY</h3>
-              <p style={{ color: '#fff8', fontSize: 13 }}>Catch 5 nodes as fast as possible.</p>
+            <div style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 12, padding: '16px 24px' }}>
+              <h3 style={{ color: '#D4AF37', margin: '0 0 8px 0', fontSize: 24 }}>PHASE 02 — AGILITY</h3>
+              <p style={{ margin: 0, color: '#888', fontSize: 14 }}>Catch 5 nodes as fast as possible.</p>
             </div>
-            <div style={{ marginBottom: 32, textAlign: 'left' }}>
-              <h3 style={{ color: '#39E6FF', fontSize: 14, marginBottom: 8, letterSpacing: 2 }}>PHASE 03 — FLOW</h3>
-              <p style={{ color: '#fff8', fontSize: 13 }}>Hit the button at the peak of the wave.</p>
+            <div style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 12, padding: '16px 24px' }}>
+              <h3 style={{ color: '#D4AF37', margin: '0 0 8px 0', fontSize: 24 }}>PHASE 03 — FLOW</h3>
+              <p style={{ margin: 0, color: '#888', fontSize: 14 }}>Hit the button at the peak of the wave.</p>
             </div>
-            <button onClick={startPhase1} style={{ width: '100%', padding: '16px 32px', fontSize: 18, fontWeight: 900, background: 'linear-gradient(135deg, #D4AF37, #FFE135)', border: 'none', borderRadius: 50, color: '#000', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: 2, boxShadow: '0 0 40px rgba(212,175,55,0.4)' }}>BEGIN STRESS TEST</button>
           </div>
+
+          <button onClick={startPhase1} style={{ width: '100%', padding: '20px 40px', fontSize: 22, fontWeight: 900, background: 'linear-gradient(135deg, #D4AF37, #FFE135)', border: 'none', borderRadius: 50, color: '#000', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: 4, boxShadow: '0 0 60px rgba(212,175,55,0.4)' }}>BEGIN STRESS TEST</button>
         </div>
       )}
 
       {/* PHASE 1 - RHYTHM */}
       {screen === 'p1' && (
-        <div style={{ textAlign: 'center', width: '100%', maxWidth: 500, zIndex: 10 }}>
-          <h2 style={{ fontSize: 24, color: '#D4AF37', marginBottom: 8 }}>PHASE 01</h2>
-          <h1 style={{ fontSize: 48, fontWeight: 900, marginBottom: 8, background: 'linear-gradient(135deg, #D4AF37, #FFE135)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>RHYTHM</h1>
-          <p style={{ color: '#fff8', marginBottom: 24 }}>Tap as fast as you can!</p>
-          <div style={{ width: '100%', height: 12, background: 'rgba(255,255,255,0.1)', borderRadius: 6, overflow: 'hidden', marginBottom: 16 }}>
-            <div style={{ width: `${p1Progress}%`, height: '100%', background: 'linear-gradient(90deg, #D4AF37, #FFE135)', transition: 'width 0.1s' }} />
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', textAlign: 'center' }}>
+          <h2 style={{ color: '#D4AF37', fontSize: 32, marginBottom: 8 }}>PHASE 01</h2>
+          <h3 style={{ color: '#D4AF37', fontSize: 20, letterSpacing: 3, marginBottom: 30 }}>RHYTHM</h3>
+          <p style={{ color: '#888', marginBottom: 30 }}>Tap as fast as you can!</p>
+          <div style={{ display: 'flex', gap: 30, marginBottom: 40, fontSize: 24, fontWeight: 700 }}>
+            <span>Time: <span style={{ color: '#D4AF37' }}>{timeLeft.toFixed(1)}s</span></span>
+            <span>Taps: <span style={{ color: '#D4AF37' }}>{p1Taps.length}</span></span>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 24 }}>
-            <span style={{ color: '#fff8' }}>Time: {timeLeft.toFixed(1)}s</span>
-            <span style={{ color: '#D4AF37', fontWeight: 700 }}>Taps: {p1Taps.length}</span>
-          </div>
-          <button onClick={handleP1Tap} onMouseDown={handleP1Tap} onTouchStart={handleP1Tap} style={{ width: '100%', padding: '80px 0', fontSize: 32, fontWeight: 900, background: `linear-gradient(135deg, rgba(${100 + p1Progress/2},0,0), rgba(180,50,0))`, border: '3px solid #D4AF37', borderRadius: 50, color: 'white', cursor: 'pointer', boxShadow: '0 0 30px rgba(212,175,55,0.3)' }}>TAP!</button>
+          <button onClick={handleP1Tap} style={{ width: 250, height: 250, borderRadius: '50%', background: `radial-gradient(circle, #D4AF37 ${p1Progress}%, #222 ${p1Progress}%)`, border: '4px solid #D4AF37', color: '#D4AF37', fontSize: 28, fontWeight: 900, cursor: 'pointer', boxShadow: `0 0 ${50 + p1Progress/2}px rgba(212,175,55,0.5)` }}>TAP!</button>
         </div>
       )}
 
       {/* PHASE 2 - AGILITY */}
       {screen === 'p2' && (
-        <div ref={arenaRef} style={{ width: '100%', maxWidth: 500, zIndex: 10 }}>
-          <h2 style={{ fontSize: 24, color: '#39FF14', marginBottom: 8, textAlign: 'center' }}>PHASE 02</h2>
-          <h1 style={{ fontSize: 48, fontWeight: 900, marginBottom: 16, background: 'linear-gradient(135deg, #39FF14, #39E6FF)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', textAlign: 'center' }}>AGILITY</h1>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16, padding: '0 20px' }}>
-            <span style={{ color: '#fff8' }}>Nodes: {p2Taps.length}/{P2_TARGETS}</span>
-            <span style={{ color: '#fff8' }}>Score: {p2Taps.length * 20}</span>
+        <div ref={arenaRef} style={{ position: 'relative', minHeight: '100vh', textAlign: 'center' }}>
+          <h2 style={{ color: '#D4AF37', fontSize: 32, marginBottom: 8 }}>PHASE 02</h2>
+          <h3 style={{ color: '#D4AF37', fontSize: 20, letterSpacing: 3, marginBottom: 30 }}>AGILITY</h3>
+          <div style={{ display: 'flex', gap: 30, justifyContent: 'center', fontSize: 20, fontWeight: 700, marginBottom: 40 }}>
+            <span>Nodes: <span style={{ color: '#D4AF37' }}>{p2Taps.length}/{P2_TARGETS}</span></span>
+            <span>Score: <span style={{ color: '#D4AF37' }}>{p2Taps.length * 20}</span></span>
           </div>
-          <div style={{ position: 'relative', width: '100%', height: 300, background: 'rgba(0,0,0,0.3)', borderRadius: 16, border: '1px solid rgba(57,255,20,0.3)', overflow: 'hidden' }}>
-            <button ref={targetRef} onClick={handleTargetTap} style={{ position: 'absolute', left: `${targetPos.x}%`, top: `${targetPos.y}%`, width: 60, height: 60, borderRadius: '50%', background: 'radial-gradient(circle, #39FF14, #006600)', border: '3px solid #39FF14', cursor: 'pointer', boxShadow: '0 0 20px rgba(57,255,20,0.6)', transform: 'translate(-50%, -50%)', transition: 'left 0.2s, top 0.2s' }} />
-          </div>
-          <p style={{ color: '#fff8', textAlign: 'center', marginTop: 16 }}>Catch all nodes!</p>
+          <p style={{ color: '#888', marginBottom: 20 }}>Catch all nodes!</p>
+          <button ref={targetRef} onClick={handleTargetTap} style={{ position: 'absolute', left: `${targetPos.x}%`, top: `${targetPos.y}%`, width: 70, height: 70, borderRadius: '50%', background: 'radial-gradient(circle, #D4AF37 0%, #D4AF3780 50%, transparent 70%)', border: '2px solid #D4AF37', color: '#D4AF37', fontSize: 14, fontWeight: 700, cursor: 'pointer', animation: 'pulseNode 0.3s ease-in-out infinite' }}>CATCH</button>
         </div>
       )}
 
       {/* PHASE 3 - FLOW */}
       {screen === 'p3' && (
-        <div style={{ textAlign: 'center', width: '100%', maxWidth: 500, zIndex: 10 }}>
-          <h2 style={{ fontSize: 24, color: '#39E6FF', marginBottom: 8 }}>PHASE 03</h2>
-          <h1 style={{ fontSize: 48, fontWeight: 900, marginBottom: 8, background: 'linear-gradient(135deg, #39E6FF, #39FF14)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>FLOW</h1>
-          <p style={{ color: '#fff8', marginBottom: 24 }}>Tap at the peak!</p>
-          <div style={{ position: 'relative', width: 200, height: 200, margin: '0 auto 24px' }}>
-            <div style={{ position: 'absolute', inset: 0, border: `2px solid rgba(57,230,255,${pulseSize/100})`, borderRadius: '50%', transform: `scale(${1 + pulseSize/100})`, transition: 'none' }} />
-            <div style={{ position: 'absolute', inset: 20, border: `2px solid rgba(57,230,255,${pulseSize/100 + 0.2})`, borderRadius: '50%', transform: `scale(${1 + pulseSize/100})`, transition: 'none' }} />
-            <div style={{ position: 'absolute', inset: 40, border: `2px solid rgba(57,230,255,${pulseSize/100 + 0.4})`, borderRadius: '50%', transform: `scale(${1 + pulseSize/100})`, transition: 'none' }} />
-            <div style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%, -50%)', width: 20, height: 20, background: '#39E6FF', borderRadius: '50%', boxShadow: '0 0 20px rgba(57,230,255,0.8)' }} />
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', textAlign: 'center' }}>
+          <h2 style={{ color: '#D4AF37', fontSize: 32, marginBottom: 8 }}>PHASE 03</h2>
+          <h3 style={{ color: '#D4AF37', fontSize: 20, letterSpacing: 3, marginBottom: 30 }}>FLOW</h3>
+          <p style={{ color: '#888', marginBottom: 30 }}>Tap at the peak!</p>
+          <div style={{ position: 'relative', width: 200, height: 200, marginBottom: 40 }}>
+            <div style={{ position: 'absolute', width: `${pulseSize}%`, height: `${pulseSize}%`, borderRadius: '50%', background: 'radial-gradient(circle, #D4AF37 0%, #D4AF3780 40%, transparent 60%)', left: '50%', top: '50%', transform: 'translate(-50%, -50%)' }} />
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16, padding: '0 20px' }}>
-            <span style={{ color: '#fff8' }}>Wave: {Math.round(pulseSize)}%</span>
-            <span style={{ color: '#fff8' }}>Hits: {hitCount}/3</span>
+          <div style={{ display: 'flex', gap: 30, justifyContent: 'center', fontSize: 20, fontWeight: 700, marginBottom: 40 }}>
+            <span>Wave: <span style={{ color: '#D4AF37' }}>{Math.round(pulseSize)}%</span></span>
+            <span>Hits: <span style={{ color: '#D4AF37' }}>{hitCount}/3</span></span>
           </div>
-          <button onClick={handleFlowTap} style={{ width: '100%', padding: '60px 0', fontSize: 28, fontWeight: 900, background: `linear-gradient(135deg, rgba(57,230,255,${0.3 + pulseSize/200}), rgba(57,255,20,${0.3 + pulseSize/200}))`, border: '3px solid #39E6FF', borderRadius: 50, color: 'white', cursor: 'pointer', boxShadow: '0 0 30px rgba(57,230,255,0.4)' }}>TAP NOW!</button>
+          <button onClick={handleFlowTap} style={{ width: 180, height: 180, borderRadius: '50%', background: `radial-gradient(circle, #D4AF37 0%, #222 70%)`, border: '4px solid #D4AF37', color: '#D4AF37', fontSize: 24, fontWeight: 900, cursor: 'pointer', boxShadow: `0 0 ${40 + pulseSize/3}px rgba(212,175,55,0.6)` }}>TAP NOW!</button>
         </div>
       )}
 
       {/* SCORE SCREEN */}
       {screen === 'score' && (
-        <div style={{ textAlign: 'center', width: '100%', maxWidth: 500, zIndex: 10 }}>
-          <h1 style={{ fontSize: 32, fontWeight: 900, marginBottom: 24, color: '#fff' }}>STRESS TEST COMPLETE</h1>
-          <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 20, padding: 24, border: `1px solid ${verdict.tone === 'gold' ? '#D4AF37' : verdict.tone === 'white' ? '#fff' : '#ff4444'}` }}>
-            <h2 style={{ fontSize: 28, fontWeight: 900, marginBottom: 8, background: `linear-gradient(135deg, ${verdict.tone === 'gold' ? '#D4AF37' : verdict.tone === 'white' ? '#fff' : '#ff4444'}, ${verdict.tone === 'gold' ? '#FFE135' : verdict.tone === 'white' ? '#ccc' : '#ff6666'})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{verdict.title}</h2>
-            <p style={{ color: '#fff8', marginBottom: 24 }}>{verdict.body}</p>
-            <div style={{ fontSize: 64, fontWeight: 900, marginBottom: 8, background: 'linear-gradient(135deg, #D4AF37, #FFE135)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{finalScore}</div>
-            <p style={{ color: '#fff6', fontSize: 14 }}>OUT OF 99</p>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', textAlign: 'center' }}>
+          <h2 style={{ color: '#888', fontSize: 16, letterSpacing: 3, marginBottom: 24 }}>STRESS TEST COMPLETE</h2>
+          <h1 style={{ fontSize: 'clamp(2rem, 6vw, 4rem)', color: verdict.tone === 'gold' ? '#FFD700' : verdict.tone === 'red' ? '#FF4444' : '#fff', marginBottom: 12 }}>{verdict.title}</h1>
+          <p style={{ color: '#888', fontSize: 18, marginBottom: 40 }}>{verdict.body}</p>
+          <div style={{ background: `linear-gradient(135deg, ${verdict.tone === 'gold' ? '#FFD700' : verdict.tone === 'red' ? '#FF4444' : '#fff'}33, transparent)`, border: `2px solid ${verdict.tone === 'gold' ? '#FFD700' : verdict.tone === 'red' ? '#FF4444' : '#fff'}`, borderRadius: 20, padding: '30px 60px', marginBottom: 40 }}>
+            <div style={{ fontSize: 'clamp(3rem, 12vw, 6rem)', fontWeight: 900, color: verdict.tone === 'gold' ? '#FFD700' : verdict.tone === 'red' ? '#FF4444' : '#fff' }}>{finalScore}</div>
+            <div style={{ color: '#888', fontSize: 14, marginTop: 8 }}>OUT OF 99</div>
           </div>
-          <p style={{ color: '#fff8', marginTop: 24, marginBottom: 16 }}>Enter your email to continue to Regulation</p>
-          <form onSubmit={handleEmailSubmit} style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="your@email.com" style={{ flex: 1, minWidth: 200, padding: '12px 20px', borderRadius: 50, border: '1px solid rgba(212,175,55,0.3)', background: 'rgba(255,255,255,0.1)', color: 'white', fontSize: 16, outline: 'none' }} />
-            <button type="submit" style={{ padding: '12px 24px', fontSize: 16, fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37, #FFE135)', border: 'none', borderRadius: 50, color: '#000', cursor: 'pointer' }}>CONTINUE</button>
+          <p style={{ color: '#888', marginBottom: 16 }}>Enter your email to continue to Regulation</p>
+          <form onSubmit={handleEmailSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16, alignItems: 'center', width: '100%', maxWidth: 400 }}>
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="your@email.com" style={{ width: '100%', padding: '16px 24px', fontSize: 18, borderRadius: 50, border: '1px solid rgba(212,175,55,0.3)', background: 'rgba(255,255,255,0.1)', color: 'white', outline: 'none' }} />
+            <button type="submit" style={{ width: '100%', padding: '16px 32px', fontSize: 18, fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37, #FFE135)', border: 'none', borderRadius: 50, color: '#000', cursor: 'pointer' }}>CONTINUE</button>
           </form>
         </div>
       )}
 
       {/* REGULATION SCREEN */}
       {screen === 'reg' && (
-        <div style={{ textAlign: 'center', width: '100%', maxWidth: 500, zIndex: 10 }}>
-          <h1 style={{ fontSize: 32, fontWeight: 900, marginBottom: 8, color: '#fff' }}>REGULATION</h1>
-          <p style={{ color: '#fff8', marginBottom: 24 }}>Breathe with the rhythm</p>
-          <div style={{ position: 'relative', width: 200, height: 200, margin: '0 auto 32px' }}>
-            <div style={{ position: 'absolute', inset: 0, background: 'rgba(57,255,20,0.1)', borderRadius: '50%', transform: `scale(${bubbleScale})`, transition: 'transform 0.1s' }} />
-            <div style={{ position: 'absolute', inset: 20, background: 'rgba(57,255,20,0.2)', borderRadius: '50%', transform: `scale(${bubbleScale})`, transition: 'transform 0.1s' }} />
-            <div style={{ position: 'absolute', inset: 40, background: 'rgba(57,255,20,0.3)', borderRadius: '50%', transform: `scale(${bubbleScale})`, transition: 'transform 0.1s' }} />
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', textAlign: 'center' }}>
+          <h2 style={{ color: '#D4AF37', fontSize: 32, marginBottom: 16 }}>REGULATION</h2>
+          <p style={{ color: '#888', marginBottom: 40 }}>Breathe with the rhythm</p>
+          <div style={{ position: 'relative', width: 300, height: 300, marginBottom: 40 }}>
+            <div style={{ position: 'absolute', width: `${bubbleScale * 80}%`, height: `${bubbleScale * 80}%`, borderRadius: '50%', background: 'radial-gradient(circle, #D4AF3788 0%, #D4AF3744 50%, transparent 70%)', left: '50%', top: '50%', transform: 'translate(-50%, -50%)', transition: 'width 0.1s, height 0.1s' }} />
           </div>
-          <p style={{ fontSize: 24, color: '#39FF14', fontWeight: 700, marginBottom: 8 }}>{regInstruction}</p>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 24, padding: '0 20px' }}>
-            <span style={{ color: '#fff8' }}>Timer: {regTimer}s</span>
-            <span style={{ color: '#fff8' }}>Cycle: {regCycles + 1}/3</span>
+          <h3 style={{ color: '#D4AF37', fontSize: 24, marginBottom: 20 }}>{regInstruction}</h3>
+          <div style={{ display: 'flex', gap: 30, justifyContent: 'center', fontSize: 18, fontWeight: 700, marginBottom: 40 }}>
+            <span>Timer: <span style={{ color: '#D4AF37' }}>{regTimer}s</span></span>
+            <span>Cycle: <span style={{ color: '#D4AF37' }}>{regCycles + 1}/3</span></span>
           </div>
-          <button onMouseDown={handleRegDown} onMouseUp={handleRegUp} onMouseLeave={handleRegUp} onTouchStart={handleRegDown} onTouchEnd={handleRegUp} style={{ width: '100%', padding: '60px 0', fontSize: 24, fontWeight: 900, background: `linear-gradient(135deg, rgba(57,255,20,${regPhase === 'inhale' ? 0.6 : 0.2}), rgba(0,102,0,${regPhase === 'inhale' ? 0.6 : 0.2}))`, border: '3px solid #39FF14', borderRadius: 50, color: 'white', cursor: 'pointer' }}>HOLD TO INHALE, RELEASE TO EXHALE</button>
-          <button onClick={startRegulation} style={{ marginTop: 16, padding: '12px 24px', fontSize: 14, background: 'transparent', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 50, color: '#fff8', cursor: 'pointer' }}>RESTART CYCLE</button>
+          <button onMouseDown={handleRegDown} onMouseUp={handleRegUp} onMouseLeave={handleRegUp} style={{ width: 250, height: 250, borderRadius: '50%', background: 'radial-gradient(circle, #D4AF37 0%, #222 70%)', border: '4px solid #D4AF37', color: '#D4AF37', fontSize: 18, fontWeight: 900, cursor: 'pointer', boxShadow: '0 0 50px rgba(212,175,55,0.4)', userSelect: 'none' }}>HOLD TO INHALE, RELEASE TO EXHALE</button>
         </div>
       )}
 
       {/* WIN SCREEN */}
       {screen === 'win' && (
-        <div style={{ textAlign: 'center', width: '100%', maxWidth: 500, zIndex: 10 }}>
-          <h1 style={{ fontSize: 48, fontWeight: 900, marginBottom: 8, background: 'linear-gradient(135deg, #D4AF37, #FFE135)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>CONGRATULATIONS!</h1>
-          <p style={{ color: '#fff8', marginBottom: 24 }}>You completed the Regulation Game</p>
-          <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 20, padding: 32, border: '1px solid rgba(212,175,55,0.3)', marginBottom: 24 }}>
-            <p style={{ color: '#fff8', fontSize: 14, marginBottom: 8 }}>Your Stress Test Score</p>
-            <div style={{ fontSize: 64, fontWeight: 900, background: 'linear-gradient(135deg, #D4AF37, #FFE135)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{finalScore}</div>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', textAlign: 'center' }}>
+          <h2 style={{ color: '#4CAF50', fontSize: 'clamp(2rem, 8vw, 4rem)', marginBottom: 16 }}>CONGRATULATIONS!</h2>
+          <p style={{ color: '#888', fontSize: 18, marginBottom: 40 }}>You completed the Regulation Game</p>
+          <div style={{ background: 'linear-gradient(135deg, #4CAF5033, transparent)', border: '2px solid #4CAF50', borderRadius: 20, padding: '30px 60px', marginBottom: 30 }}>
+            <p style={{ color: '#888', fontSize: 14, marginBottom: 8 }}>Your Stress Test Score</p>
+            <div style={{ fontSize: 'clamp(3rem, 12vw, 6rem)', fontWeight: 900, color: '#4CAF50' }}>{finalScore}</div>
           </div>
           {email && (
-            <div style={{ background: 'rgba(57,255,20,0.1)', borderRadius: 12, padding: 16, marginBottom: 24 }}>
-              <p style={{ color: '#39FF14', fontSize: 14 }}>Email registered: <strong>{email}</strong></p>
-            </div>
+            <p style={{ color: '#888', marginBottom: 40 }}>Email registered: <strong style={{ color: '#D4AF37' }}>{email}</strong></p>
           )}
           <button onClick={() => setScreen('landing')} style={{ width: '100%', padding: '16px 32px', fontSize: 18, fontWeight: 900, background: 'linear-gradient(135deg, #D4AF37, #FFE135)', border: 'none', borderRadius: 50, color: '#000', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: 2, boxShadow: '0 0 40px rgba(212,175,55,0.4)' }}>Play Again</button>
         </div>
       )}
 
-      {/* EMAIL SCREEN (for landing option) */}
+      {/* EMAIL SCREEN */}
       {screen === 'email' && (
-        <div style={{ textAlign: 'center', width: '100%', maxWidth: 500, zIndex: 10 }}>
-          <h1 style={{ fontSize: 32, fontWeight: 900, marginBottom: 24, color: '#fff' }}>ENTER YOUR EMAIL</h1>
-          <form onSubmit={handleEmailSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="your@email.com" style={{ width: '100%', padding: '16px 24px', fontSize: 18, borderRadius: 12, border: '1px solid rgba(212,175,55,0.3)', background: 'rgba(255,255,255,0.1)', color: 'white', outline: 'none' }} />
-            <button type="submit" style={{ width: '100%', padding: '16px 32px', fontSize: 18, fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37, #FFE135)', border: 'none', borderRadius: 12, color: '#000', cursor: 'pointer' }}>SUBMIT</button>
-          </form>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', textAlign: 'center' }}>
+          <h2 style={{ color: '#D4AF37', fontSize: 32, marginBottom: 16 }}>ENTER YOUR EMAIL</h2>
+          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="your@email.com" style={{ width: '100%', maxWidth: 400, padding: '16px 24px', fontSize: 18, borderRadius: 12, border: '1px solid rgba(212,175,55,0.3)', background: 'rgba(255,255,255,0.1)', color: 'white', marginBottom: 20, outline: 'none' }} />
+          <button onClick={handleEmailSubmit} style={{ width: 200, padding: '16px 32px', fontSize: 18, fontWeight: 700, background: 'linear-gradient(135deg, #D4AF37, #FFE135)', border: 'none', borderRadius: 50, color: '#000', cursor: 'pointer' }}>SUBMIT</button>
         </div>
       )}
 
