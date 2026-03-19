@@ -92,7 +92,7 @@ export default function PranaIndexApp() {
     });
   };
 
-  const handleTargetTap = () => {
+  const onClick={handleTargetTap} onTouchStart={handleTargetTap} = () => {
     const newTaps = [...p2Taps, Date.now() - p2Start];
     setP2Taps(newTaps);
     if (newTaps.length >= P2_TARGETS) {
@@ -285,7 +285,7 @@ export default function PranaIndexApp() {
       {screen === 'p1' && (
         <div style={{ width: '100%', maxWidth: 400, textAlign: 'center', marginTop: 60 }}>
           <h3 style={{ fontSize: 12, letterSpacing: 3, color: '#D4AF37', fontWeight: 900, marginBottom: 40, textTransform: 'uppercase', fontStyle: 'italic' }}>Play Your Rhythm</h3>
-          <button id="tap-btn" onClick={handleP1Tap} style={{ width: 176, height: 176, background: '#D4AF37', borderRadius: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 60px rgba(212,175,55,0.3)', border: 'none', cursor: 'pointer', margin: '0 auto' }}>
+          <button id="tap-btn" onClick={handleP1Tap} onTouchStart={handleP1Tap} style={{ width: 176, height: 176, background: '#D4AF37', borderRadius: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 60px rgba(212,175,55,0.3)', border: 'none', cursor: 'pointer', margin: '0 auto' }}>
             <div style={{ fontWeight: 900, color: '#D4AF37', fontSize: 32 }}>PI</div>
           </button>
           <div style={{ marginTop: 48, width: '100%', height: 6, background: 'rgba(255,255,255,0.1)', borderRadius: 9999, overflow: 'hidden' }}>
@@ -300,7 +300,7 @@ export default function PranaIndexApp() {
         <div style={{ width: '100%', maxWidth: 400, textAlign: 'center', marginTop: 60 }}>
           <h3 style={{ fontSize: 12, letterSpacing: 4, color: '#D4AF37', fontWeight: 900, marginBottom: 12, textTransform: 'uppercase', fontStyle: 'italic' }}>Quick! Catch the</h3>
           <div id="arena" style={{ position: 'relative', width: '100%', height: 320, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 24, overflow: 'hidden', boxShadow: 'inset 0 0 40px rgba(0,0,0,0.5)' }}>
-            <button id="target" onClick={handleTargetTap} style={{ position: 'absolute', width: 64, height: 64, background: '#D4AF37', borderRadius: 9999, color: '#0A0E1A', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, boxShadow: '0 0 30px rgba(212,175,55,0.5)', border: 'none', cursor: 'pointer', left: targetPos.left, top: targetPos.top, transform: 'translate(-50%, -50%)' }}>
+            <button id="target" onClick={handleTargetTap} onTouchStart={handleTargetTap}} style={{ position: 'absolute', width: 64, height: 64, background: '#D4AF37', borderRadius: 9999, color: '#0A0E1A', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, boxShadow: '0 0 30px rgba(212,175,55,0.5)', border: 'none', cursor: 'pointer', left: targetPos.left, top: targetPos.top, transform: 'translate(-50%, -50%)' }}>
               +
             </button>
           </div>
@@ -313,7 +313,7 @@ export default function PranaIndexApp() {
           <h3 style={{ fontSize: 12, letterSpacing: 4, color: '#D4AF37', fontWeight: 900, marginBottom: 24, textTransform: 'uppercase', fontStyle: 'italic' }}>Hit the Peak</h3>
           <div style={{ position: 'relative', width: 256, height: 256, margin: '0 auto', background: 'rgba(255,255,255,0.05)', borderRadius: 9999, border: '1px solid rgba(255,255,255,0.1)' }}>
             <div id="wave-pulse" style={{ position: 'absolute', borderRadius: 9999, background: '#D4AF37', width: 0, height: 0, opacity: 0, left: '50%', top: '50%', transform: 'translate(-50%, -50%)' }}></div>
-            <button id="flow-btn" onClick={handleFlowTap} style={{ position: 'absolute', width: 96, height: 96, background: 'rgba(0,0,0,0.8)', border: '2px solid #D4AF37', borderRadius: 9999, zIndex: 10, fontWeight: 900, fontSize: 10, color: '#D4AF37', textTransform: 'uppercase', cursor: 'pointer', left: '50%', top: '50%', transform: 'translate(-50%, -50%)' }}>
+            <button id="flow-btn" onClick={handleFlowTap} onTouchStart={handleFlowTap} style={{ position: 'absolute', width: 96, height: 96, background: 'rgba(0,0,0,0.8)', border: '2px solid #D4AF37', borderRadius: 9999, zIndex: 10, fontWeight: 900, fontSize: 10, color: '#D4AF37', textTransform: 'uppercase', cursor: 'pointer', left: '50%', top: '50%', transform: 'translate(-50%, -50%)' }}>
               TAP PEAK
             </button>
           </div>
