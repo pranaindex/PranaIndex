@@ -2,94 +2,74 @@
 import React, { useState } from 'react';
 
 export default function PranaIndex() {
-  // This "state" tells the app which screen to show
-  const [screen, setScreen] = useState('landing'); 
+  const [screen, setScreen] = useState('landing');
   const [email, setEmail] = useState('');
 
+  // Standard CSS styles to bypass Tailwind issues
+  const styles = {
+    wrapper: { backgroundColor: '#0f172a', color: 'white', minHeight: '100vh', display: 'flex', flexDirection: 'column' as const, fontFamily: 'sans-serif' },
+    nav: { padding: '20px', borderBottom: '1px solid #1e293b', display: 'flex', justifyContent: 'center' },
+    logo: { height: '80px', width: 'auto', marginBottom: '10px' },
+    main: { flex: 1, display: 'flex', flexDirection: 'column' as const, alignItems: 'center', justifyContent: 'center', textAlign: 'center' as const, padding: '20px' },
+    title: { fontSize: '3rem', fontWeight: '800', marginBottom: '20px', color: '#22d3ee' },
+    button: { backgroundColor: '#22d3ee', color: '#0f172a', padding: '15px 40px', borderRadius: '50px', fontWeight: 'bold', border: 'none', cursor: 'pointer', fontSize: '1.2rem' },
+    input: { padding: '15px', borderRadius: '10px', border: '1px solid #334155', backgroundColor: '#1e293b', color: 'white', width: '100%', maxWidth: '300px', marginBottom: '10px' }
+  };
+
   return (
-    <div className="min-h-screen text-white font-sans flex flex-col">
-      
-      {/* 1. NAVIGATION / BRANDING */}
-      <nav className="p-6 flex justify-between items-center border-b border-slate-800">
-        <div className="flex items-center gap-3">
-          {/* This pulls your logo from the public folder */}
-          <img src="/gold-pi-logo.png" alt="Logo" className="w-10 h-10 object-contain" />
-          <span className="text-xl font-bold tracking-tighter text-cyan-400">PRANA INDEX</span>
+    <div style={styles.wrapper}>
+      <nav style={styles.nav}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <img src="/gold-pi-logo.png" alt="Logo" style={styles.logo} />
+          <h1 style={{ fontSize: '1.5rem', letterSpacing: '-1px', margin: 0 }}>PRANA INDEX</h1>
         </div>
       </nav>
 
-      <main className="flex-grow flex flex-col items-center justify-center px-6 text-center">
-        
-        {/* SCREEN A: THE LANDING PAGE */}
+      <main style={styles.main}>
         {screen === 'landing' && (
-          <div className="animate-in fade-in duration-700">
-            <h2 className="text-5xl md:text-7xl font-extrabold mb-6 bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
-              Master Your Focus.
-            </h2>
-            <p className="text-slate-400 text-lg mb-10 max-w-md">
-              A 60-second test to index your current vitality and stress levels.
-            </p>
-            <button 
-              onClick={() => setScreen('game')}
-              className="bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-bold py-4 px-10 rounded-full transition-all transform hover:scale-105"
-            >
-              Start Stress Test
-            </button>
+          <div>
+            <h2 style={styles.title}>Master Your Focus.</h2>
+            <p style={{ color: '#94a3b8', marginBottom: '30px' }}>A 60-second test to index your vitality.</p>
+            <button style={styles.button} onClick={() => setScreen('game')}>Start Stress Test</button>
           </div>
         )}
 
-        {/* SCREEN B: THE GAME (Placeholder for now) */}
         {screen === 'game' && (
-          <div className="w-full max-w-2xl p-10 bg-slate-800/50 rounded-3xl border border-slate-700">
-            <h3 className="text-2xl mb-4">Game Loading...</h3>
-            <p className="text-slate-400 mb-8">Ready to test your reaction time?</p>
-            <button 
-              onClick={() => setScreen('email')}
-              className="text-cyan-400 underline"
-            >
-              (Skip to Email Screen for Setup)
+          <div style={{ padding: '40px', backgroundColor: '#1e293b', borderRadius: '20px' }}>
+            <h2>Game Loading...</h2>
+            <p>Ready to test your reaction time?</p>
+            <button style={{ color: '#22d3ee', background: 'none', border: 'none', cursor: 'pointer' }} onClick={() => setScreen('email')}>
+              (Click here to go to Email Screen)
             </button>
           </div>
         )}
 
-        {/* SCREEN C: EMAIL COLLECTION */}
         {screen === 'email' && (
-          <div className="max-w-md w-full animate-in zoom-in duration-300">
-            <h3 className="text-3xl font-bold mb-4">Test Complete.</h3>
-            <p className="text-slate-400 mb-8 text-lg">Enter your email to see your Index Score and unlock the Regulation Exercise.</p>
+          <div>
+            <h3 style={{ fontSize: '2rem', marginBottom: '20px' }}>Test Complete.</h3>
+            <p style={{ marginBottom: '20px' }}>Enter email to see your score.</p>
             <input 
+              style={styles.input}
               type="email" 
-              placeholder="your@email.com"
-              className="w-full p-4 rounded-xl bg-slate-800 border border-slate-700 mb-4 focus:outline-none focus:ring-2 focus:ring-cyan-500"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              placeholder="your@email.com" 
+              value={email} 
+              onChange={(e) => setEmail(e.target.value)} 
             />
-            <button 
-              onClick={() => setScreen('regulation')}
-              className="w-full bg-white text-slate-900 font-bold py-4 rounded-xl hover:bg-slate-200 transition"
-            >
-              Get My Score
-            </button>
+            <br />
+            <button style={styles.button} onClick={() => setScreen('regulation')}>Get My Score</button>
           </div>
         )}
 
-        {/* SCREEN D: REGULATION GAME */}
         {screen === 'regulation' && (
-          <div className="text-center">
-            <h3 className="text-4xl font-bold text-green-400 mb-4">Regulation Mode</h3>
-            <p className="text-slate-400 italic">Breathe in... Breathe out...</p>
-            <button 
-              onClick={() => setScreen('landing')}
-              className="mt-10 text-slate-500 hover:text-white"
-            >
-              Restart
-            </button>
+          <div>
+            <h3 style={{ fontSize: '2.5rem', color: '#4ade80' }}>Regulation Mode</h3>
+            <p>Breathe with the rhythm...</p>
+            <button style={{ marginTop: '20px', color: '#94a3b8' }} onClick={() => setScreen('landing')}>Restart</button>
           </div>
         )}
-
       </main>
 
-      <footer className="p-10 text-slate-600 text-sm text-center">
+      <footer style={{ padding: '20px', color: '#475569', fontSize: '0.8rem' }}>
         &copy; 2026 PRANA INDEX
       </footer>
     </div>
