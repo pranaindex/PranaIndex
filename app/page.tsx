@@ -344,7 +344,7 @@ export default function PranaIndexApp() {
       )}
       
       {/* REGULATION SCREEN */}
-screen === 'reg' && (
+{screen === 'reg' && (
   <div style={{width:'100%', maxWidth:400, textAlign:'center', marginTop:60}}>
     <h3 style={{fontSize:12, letterSpacing:3, color:'#D4AF37', fontWeight:900, marginBottom:8, textTransform:'uppercase', fontStyle:'italic'}}>REGULATION MODE</h3>
     <p style={{fontSize:10, opacity:0.6, fontStyle:'italic', marginBottom:24}}>{regCycles}<span style={{opacity:0.3}}>/3 CYCLES</span></p>
