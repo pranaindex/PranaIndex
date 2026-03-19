@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 export default function PranaIndexApp() {
-  const [screen, setScreen] = useState<'landing' | 'stress' | 'score' | 'email' | 'regulation' | 'win'>('landing');
+  const [screen, setScreen] = useState<'landing' | 'stress' | 'score' | 'email' | 'regulation' | ' | 'p1' | 'p2' | 'p3''win'>('landing');
   const [p1Taps, setP1Taps] = useState<number[]>([]);
   const [p2Taps, setP2Taps] = useState<number[]>([]);
   const [p2Start, setP2Start] = useState<number>(0);
