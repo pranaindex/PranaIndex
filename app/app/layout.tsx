@@ -1,4 +1,3 @@
-import './globals.css'
 export const metadata = { title: 'Prana Index', description: 'Find your Pi' }
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
