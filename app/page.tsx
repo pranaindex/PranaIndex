@@ -79,7 +79,7 @@ export default function PranaIndexApp() {
   };
 
   const handleP1Tap = () => {
-    if (phaseTimerRef.current) {
+    if (p1TimerRef.current) {
       const elapsed = Date.now() - p1StartTimeRef.current;
       setP1Taps(prev => [...prev, elapsed]);
     }
