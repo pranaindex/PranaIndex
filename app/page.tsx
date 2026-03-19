@@ -436,5 +436,6 @@ export default function PranaIndexApp() {
   </div>
 )}
   </div>
+    );
 
     }
