@@ -111,7 +111,6 @@ export default function PranaIndexOfficial() {
   };
 
   const getVerdict = () => {
-    if (finalScore >= 75) return { title: "USTAAD! KIRAAN FOCUS!", body: "Pura Hyderabad tumhare rhythm pe naachra! Ek number performance!" };
     if (finalScore >= 50) return { title: "ZABARDAST MOOD!", body: "Sahi jaare mawa! Engine ek dum fit hai. Rhythm tight hai!" };
     return { title: "BAIGAN! TOTAL GHOTALA!", body: "Engine baith gaya mawa. Tension nakko lo, regulation game khelo aur engine garam karo!" };
   };
@@ -131,7 +130,6 @@ export default function PranaIndexOfficial() {
     }, 1000);
   };
 
-  // Pulse logic for Phase 3
   useEffect(() => {
     if (screen === 'p3') {
       const int = setInterval(() => {
@@ -205,12 +203,10 @@ export default function PranaIndexOfficial() {
       ctx.font = '700 30px Inter, sans-serif'; ctx.fillStyle = 'white'; ctx.fillText('STRESS SCORE', 540, 500);
       ctx.font = '900 350px Inter, sans-serif'; ctx.fillStyle = '#D4AF37'; ctx.fillText(finalScore.toString(), 540, 820);
       ctx.font = '900 40px Inter, sans-serif'; ctx.fillStyle = 'white'; ctx.fillText(getVerdict().title, 540, 930);
-      // URL WATERMARK
       ctx.font = '400 24px Inter, sans-serif'; ctx.fillStyle = 'rgba(212,175,55,0.6)'; ctx.fillText('www.pranaindex.com', 540, 1000);
       const link = document.createElement('a'); link.download = `PI_Score_${finalScore}.png`;
       link.href = canvas.toDataURL('image/png'); link.click();
     };
-    img.onerror = () => { /* Fallback to text logo if image fails */ };
   };
 
   return (
@@ -227,8 +223,10 @@ export default function PranaIndexOfficial() {
         
         {screen === 'landing' && (
           <div style={{ textAlign: 'center' }}>
-            <img src="/gold-pi-logo.png" style={{ width: '220px', marginBottom: '10px' }} />
-            <h1 style={{ fontSize: '14px', letterSpacing: '8px', color: 'white', marginBottom: '40px' }}>PRANA INDEX</h1>
+            <img src="/gold-pi-logo.png" style={{ width: '220px', marginBottom: '10px' }} alt="logo" />
+            <h1 style={{ fontSize: '14px', letterSpacing: '8px', color: 'white', marginBottom: '30px' }}>PRANA INDEX</h1>
+            <p style={{ color: '#D4AF37', fontSize: '28px', fontWeight: 900, fontStyle: 'italic', marginBottom: '5px' }}>Play your rhythm</p>
+            <p style={{ letterSpacing: '2px', fontSize: '12px', marginBottom: '60px', opacity: 0.8 }}>CHECK YOUR PI STRESS SCORE</p>
             <button onClick={startAtmosphere} style={{ border: '2px solid #D4AF37', color: '#D4AF37', padding: '15px 60px', borderRadius: '50px', background: 'none', fontSize: '20px', fontWeight: 900, cursor: 'pointer' }}>START</button>
           </div>
         )}
@@ -252,6 +250,7 @@ export default function PranaIndexOfficial() {
               style={{ width: '200px', height: '200px', backgroundColor: 'white', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', transform: isTapping ? 'scale(0.92)' : 'scale(1)', transition: '0.1s', boxShadow: isTapping ? '0 0 60px white' : '0 0 20px rgba(255,255,255,0.2)' }}>
               <img src="/gold-pi-logo.png" style={{ width: '120px' }} />
             </div>
+            <p style={{ marginTop: '60px', fontSize: '11px', opacity: 0.7, letterSpacing: '1px' }}>MAINTAIN A STEADY RHYTHM</p>
           </div>
         )}
 
@@ -264,13 +263,14 @@ export default function PranaIndexOfficial() {
                     else { setP2Count(c => c + 1); targetPos.current = { left: Math.random()*70+15+'%', top: Math.random()*70+15+'%' }; }
                 }}
                 style={{ position: 'absolute', left: targetPos.current.left, top: targetPos.current.top, width: '80px', height: '80px', borderRadius: '50%', backgroundColor: '#D4AF37', color: 'black', fontWeight: 900, border: 'none', cursor: 'pointer' }}>π</button>
+             <p style={{ position: 'absolute', bottom: '80px', width: '100%', textAlign: 'center', fontSize: '11px', opacity: 0.7, letterSpacing: '1px' }}>CATCH THE NODES AS FAST AS YOU CAN</p>
           </div>
         )}
 
         {screen === 'p3' && (
           <div style={{ textAlign: 'center' }}>
             <p style={{ color: '#D4AF37', marginBottom: '50px', fontWeight: 900 }}>PHASE 03: FOCUS ({p3Hits.length}/3)</p>
-            <div style={{ width: '280px', height: '280px', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: '280px', height: '280px', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto' }}>
                 <div style={{ position: 'absolute', width: pulseSize+'%', height: pulseSize+'%', borderRadius: '50%', backgroundColor: pulseSize > 85 ? '#39FF14' : '#D4AF37', opacity: pulseSize > 85 ? 0.8 : 0.4 }}></div>
                 <button onPointerDown={() => {
                     const newHits = [...p3Hits, pulseSize]; setP3Hits(newHits);
@@ -278,6 +278,7 @@ export default function PranaIndexOfficial() {
                     if (newHits.length >= 3) calculateFinalScore();
                 }} style={{ zIndex: 10, width: '110px', height: '110px', borderRadius: '50%', backgroundColor: 'black', border: '3px solid #D4AF37', color: '#D4AF37', fontWeight: 900, cursor: 'pointer' }}>TAP PEAK</button>
             </div>
+            <p style={{ marginTop: '60px', fontSize: '11px', opacity: 0.7, letterSpacing: '1px' }}>HIT THE PEAK WHEN THE PULSE TURNS GREEN</p>
           </div>
         )}
 
