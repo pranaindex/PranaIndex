@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from './supabase';
+
 export default function PranaIndexOfficial() {
   const [screen, setScreen] = useState('landing');
   const [userName, setUserName] = useState('');
@@ -24,6 +25,33 @@ export default function PranaIndexOfficial() {
   const [regPhase, setRegPhase] = useState('READY'); 
   const [regTimer, setRegTimer] = useState(5.0);
   const [regCycles, setRegCycles] = useState(0);
+
+  // --- SUPABASE SUBMIT FUNCTION ---
+  const handleSignUp = async () => {
+    if (!userName || !email) {
+      alert("Please enter your email before calibrating!");
+      return;
+    }
+
+    const { error } = await supabase
+      .from('subscribers') 
+      .insert([
+        { 
+          user_name: userName, 
+          user_email: email 
+        }
+      ]);
+
+    if (error) {
+      console.error("Error:", error.message);
+      alert("Error: " + error.message);
+    } else {
+      console.log("Success! Data saved to Supabase.");
+      // Move to the next screen ONLY after saving successfully
+      setRegPhase('READY');
+      setScreen('reg'); 
+    }
+  };
 
   // Refs
   const audioCtx = useRef<AudioContext | null>(null);
@@ -265,7 +293,9 @@ export default function PranaIndexOfficial() {
                <button onClick={() => window.open(`https://api.whatsapp.com/send?text=I scored ${finalScore} on Prana Index! Check yours at www.pranaindex.com`, '_blank')} style={{ flex: 1, padding: '15px', borderRadius: '30px', border: '1px solid #D4AF37', color: '#D4AF37', background: 'none', fontWeight: 900, cursor: 'pointer' }}>💬 WhatsApp</button>
             </div>
             <input placeholder="Enter Email to Calibrate..." value={email} onChange={e=>setEmail(e.target.value)} style={{ width: '100%', padding: '18px', borderRadius: '50px', border: '1px solid #D4AF37', background: 'rgba(255,255,255,0.05)', color: 'white', textAlign: 'center', marginBottom: '20px' }} />
-            <button onClick={() => { setRegPhase('READY'); setScreen('reg'); }} style={{ backgroundColor: '#D4AF37', color: 'black', padding: '18px 50px', borderRadius: '50px', fontWeight: 900, border: 'none', width: '100%', cursor: 'pointer' }}>CALIBRATE REGULATION</button>
+            
+            {/* THIS IS THE BUTTON WE CHANGED! */}
+            <button onClick={handleSignUp} style={{ backgroundColor: '#D4AF37', color: 'black', padding: '18px 50px', borderRadius: '50px', fontWeight: 900, border: 'none', width: '100%', cursor: 'pointer' }}>CALIBRATE REGULATION</button>
           </div>
         )}
 
