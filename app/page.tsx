@@ -106,7 +106,7 @@ export default function PranaIndex() {
     const reflex = Math.max(0, 100 - (p2TotalTime / 50));
 
     // 3. Focus Score (P3)
-    const focus = p3Hits.reduce((a,b)=>a+b, 0) / p3Hits.length;
+    const focus = p3Hits.reduce((a,b)=>a+b, 0) / (p3Hits.length || 1); // Fixed NaN potential
 
     const final = (consistency * 0.4) + (reflex * 0.3) + (focus * 0.3);
     setFinalScore(Math.floor(final));
@@ -185,7 +185,91 @@ export default function PranaIndex() {
     if (screen === 'reg' && regPhase === 'READY' && regCycles < 3) {
       setTimeout(startRegulation, 1000);
     }
-  }, [screen, regPhase]);
+  }, [screen, regPhase, regCycles]);
+
+
+  // --- 6. SHARING & SAVING FEATURES ---
+  const getShareText = () => `I just scored ${finalScore} on the PI Stress Test! Check your rhythm and beat my score:`;
+  const getShareUrl = () => typeof window !== 'undefined' ? window.location.href : 'https://pranaindex.com';
+
+  const shareWhatsApp = () => {
+    const text = encodeURIComponent(`${getShareText()} ${getShareUrl()}`);
+    window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
+  };
+
+  const shareNative = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Prana Index Score',
+          text: getShareText(),
+          url: getShareUrl()
+        });
+      } catch (err) { console.error('Share failed:', err); }
+    } else {
+      alert("Native sharing isn't supported on this browser. Try WhatsApp or Save Image!");
+    }
+  };
+
+  const downloadScoreImage = () => {
+    // Dynamically draw a beautiful square score card
+    const canvas = document.createElement('canvas');
+    canvas.width = 1080; canvas.height = 1080; // Instagram ready
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Background
+    ctx.fillStyle = '#0A0E1A';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Gold Border
+    ctx.strokeStyle = '#D4AF37';
+    ctx.lineWidth = 15;
+    ctx.strokeRect(40, 40, 1000, 1000);
+
+    // Text Setup
+    ctx.textAlign = 'center';
+    
+    // Logo "π"
+    ctx.font = 'italic 900 180px Inter, sans-serif';
+    ctx.fillStyle = '#D4AF37';
+    ctx.fillText('π', 540, 280);
+
+    // Branding
+    ctx.font = '900 50px Inter, sans-serif';
+    ctx.letterSpacing = '10px';
+    ctx.fillText('PRANA INDEX', 540, 400);
+
+    // Score Label
+    ctx.font = '700 35px Inter, sans-serif';
+    ctx.fillStyle = 'white';
+    ctx.letterSpacing = '5px';
+    ctx.fillText('STRESS SCORE', 540, 520);
+
+    // Final Score
+    ctx.font = '900 300px Inter, sans-serif';
+    ctx.fillStyle = '#D4AF37';
+    ctx.fillText(finalScore.toString(), 540, 800);
+
+    // Verdict Phrase
+    const verdict = finalScore > 90 ? "USTAAD! SUPREME FOCUS" : finalScore > 75 ? "ELITE COHERENCE" : "CALIBRATION NEEDED";
+    ctx.font = '900 45px Inter, sans-serif';
+    ctx.fillStyle = 'white';
+    ctx.fillText(verdict, 540, 940);
+
+    // Trigger Download
+    const link = document.createElement('a');
+    link.download = `PI_Stress_Score_${finalScore}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  };
+
+  // --- STYLING HELPERS ---
+  const socialBtnStyle = {
+    backgroundColor: 'rgba(212,175,55,0.1)', border: '1px solid #D4AF37', color: '#D4AF37', 
+    padding: '12px 20px', borderRadius: '30px', fontWeight: 900, cursor: 'pointer', fontSize: '14px', flex: 1
+  };
+
 
   return (
     <div style={{ backgroundColor: '#0A0E1A', color: 'white', minHeight: '100vh', touchAction: 'none', overflow: 'hidden', position: 'relative', fontFamily: 'Inter, sans-serif' }}>
@@ -202,7 +286,7 @@ export default function PranaIndex() {
         
         {screen === 'landing' && (
           <div style={{ textAlign: 'center' }}>
-            <img src="/gold-pi-logo.png" style={{ width: '220px', marginBottom: '10px' }} />
+            <img src="/gold-pi-logo.png" style={{ width: '220px', marginBottom: '10px' }} alt="logo" />
             <h1 style={{ fontSize: '14px', letterSpacing: '8px', color: 'white', marginBottom: '40px' }}>PRANA INDEX</h1>
             <p style={{ color: '#D4AF37', fontSize: '24px', fontWeight: 900, fontStyle: 'italic', marginBottom: '10px' }}>Play your rhythm</p>
             <p style={{ letterSpacing: '1px', marginBottom: '60px', opacity: 0.8 }}>CHECK YOUR PI STRESS SCORE</p>
@@ -235,7 +319,7 @@ export default function PranaIndex() {
                 boxShadow: isTapping ? '0 0 60px white' : '0 0 20px rgba(255,255,255,0.2)'
               }}
             >
-              <img src="/gold-pi-logo.png" style={{ width: '120px' }} />
+              <img src="/gold-pi-logo.png" style={{ width: '120px' }} alt="logo" />
             </div>
             <p style={{ marginTop: '40px', opacity: 0.6, fontSize: '12px' }}>MAINTAIN A STEADY RHYTHM</p>
           </div>
@@ -278,12 +362,20 @@ export default function PranaIndex() {
         )}
 
         {screen === 'result' && (
-          <div style={{ textAlign: 'center', animation: 'fadeIn 1s' }}>
+          <div style={{ textAlign: 'center', animation: 'fadeIn 1s', maxWidth: '380px', width: '100%' }}>
             <p style={{ fontSize: '12px', color: '#D4AF37', letterSpacing: '3px' }}>STRESS SCORE</p>
             <h3 style={{ fontSize: '130px', fontWeight: 900, color: '#D4AF37', margin: '10px 0', lineHeight: 1 }}>{finalScore}</h3>
             <p style={{ fontWeight: 900, color: 'white', fontSize: '18px', marginBottom: '40px' }}>
               {finalScore > 90 ? "USTAAD! SUPREME FOCUS" : finalScore > 75 ? "ELITE COHERENCE" : "CALIBRATION NEEDED"}
             </p>
+            
+            {/* SHARING ROW */}
+            <div style={{ display: 'flex', gap: '10px', marginBottom: '30px', justifyContent: 'center' }}>
+               <button onClick={downloadScoreImage} style={socialBtnStyle}>📥 Save</button>
+               <button onClick={shareWhatsApp} style={socialBtnStyle}>💬 WhatsApp</button>
+               <button onClick={shareNative} style={socialBtnStyle}>🔗 Share</button>
+            </div>
+
             <input placeholder="Email to Regulate..." value={email} onChange={e=>setEmail(e.target.value)} style={{ width: '100%', padding: '20px', borderRadius: '50px', border: '1px solid #D4AF37', background: 'rgba(255,255,255,0.05)', color: 'white', textAlign: 'center', marginBottom: '20px' }} />
             <button onClick={() => { setRegPhase('READY'); setScreen('reg'); }} style={{ backgroundColor: '#D4AF37', color: 'black', padding: '18px 50px', borderRadius: '50px', fontWeight: 900, border: 'none', width: '100%', cursor: 'pointer' }}>CALIBRATE REGULATION</button>
           </div>
