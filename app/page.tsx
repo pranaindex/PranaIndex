@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
-
+import { supabase } from './supabase';
 export default function PranaIndexOfficial() {
   const [screen, setScreen] = useState('landing');
   const [userName, setUserName] = useState('');
