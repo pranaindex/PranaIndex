@@ -1,14 +1,14 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
 
-export default function PranaIndex() {
+export default function PranaIndexOfficial() {
   const [screen, setScreen] = useState('landing');
   const [email, setEmail] = useState('');
   
-  // Game Performance Tracking
+  // Game Performance
   const [p1Taps, setP1Taps] = useState<number[]>([]);
   const [p2StartTime, setP2StartTime] = useState(0);
-  const [p3Hits, setP3Hits] = useState<number[]>([]); // Stores pulseSize at time of tap
+  const [p3Hits, setP3Hits] = useState<number[]>([]); 
   
   // UI States
   const [p1TimeLeft, setP1TimeLeft] = useState(15);
@@ -18,7 +18,7 @@ export default function PranaIndex() {
   const [p2Count, setP2Count] = useState(0);
   const [finalScore, setFinalScore] = useState(0);
   
-  // Regulation States
+  // Regulation States (5-3-5)
   const [regPhase, setRegPhase] = useState('READY'); 
   const [regTimer, setRegTimer] = useState(5.0);
   const [regCycles, setRegCycles] = useState(0);
@@ -28,10 +28,8 @@ export default function PranaIndex() {
   const rainAudio = useRef<HTMLAudioElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const targetPos = useRef({ left: '50%', top: '50%' });
-  const engineOsc = useRef<OscillatorNode | null>(null);
-  const engineGain = useRef<GainNode | null>(null);
 
-  // --- 1. RAIN ANIMATION (STAYS ACTIVE) ---
+  // --- 1. RAIN ANIMATION ---
   useEffect(() => {
     if (!canvasRef.current) return;
     const canvas = canvasRef.current;
@@ -43,7 +41,7 @@ export default function PranaIndex() {
     for (let i = 0; i < 150; i++) drops.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, l: Math.random() * 25, v: Math.random() * 5 + 3 });
     const animate = () => {
       ctx.fillStyle = 'rgba(10, 14, 26, 0.2)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)'; ctx.lineWidth = 1;
+      ctx.strokeStyle = 'rgba(212, 175, 55, 0.15)'; ctx.lineWidth = 1;
       drops.forEach(d => { ctx.beginPath(); ctx.moveTo(d.x, d.y); ctx.lineTo(d.x, d.y + d.l); ctx.stroke(); d.y += d.v; if (d.y > canvas.height) d.y = -20; });
       requestAnimationFrame(animate);
     };
@@ -51,7 +49,7 @@ export default function PranaIndex() {
     return () => window.removeEventListener('resize', resize);
   }, []);
 
-  // --- 2. SOUND SYSTEM ---
+  // --- 2. AUDIO SYSTEM ---
   const startAtmosphere = () => {
     if (!rainAudio.current) {
       rainAudio.current = new Audio("https://www.soundjay.com/nature/rain-01.mp3");
@@ -75,42 +73,60 @@ export default function PranaIndex() {
     o.start(); o.stop(audioCtx.current.currentTime + d);
   };
 
-  const setEngineRev = (freq: number, vol: number) => {
+  const playTransitionSound = () => {
+    // Distinct "Level Up" sound for moving between phases
+    playTone(600, 'sine', 0.15, 0.2);
+    setTimeout(() => playTone(800, 'sine', 0.3, 0.2), 150);
+  };
+
+  const playRev = (startF: number, endF: number, dur: number, vol: number) => {
     if (!audioCtx.current) return;
-    if (!engineOsc.current) {
-      engineOsc.current = audioCtx.current.createOscillator();
-      engineGain.current = audioCtx.current.createGain();
-      engineOsc.current.type = 'sawtooth';
-      engineOsc.current.connect(engineGain.current);
-      engineGain.current.connect(audioCtx.current.destination);
-      engineOsc.current.start();
-    }
-    engineOsc.current.frequency.exponentialRampToValueAtTime(freq, audioCtx.current.currentTime + 0.1);
-    engineGain.current!.gain.linearRampToValueAtTime(vol, audioCtx.current.currentTime + 0.1);
+    const now = audioCtx.current.currentTime;
+    const osc1 = audioCtx.current.createOscillator();
+    const osc2 = audioCtx.current.createOscillator();
+    const gainNode = audioCtx.current.createGain();
+
+    osc1.type = 'sawtooth';
+    osc2.type = 'square'; // Adds the "growl"
+    
+    osc1.frequency.setValueAtTime(startF, now);
+    osc1.frequency.exponentialRampToValueAtTime(endF, now + dur);
+    
+    osc2.frequency.setValueAtTime(startF * 1.01, now); // Detune for richness
+    osc2.frequency.exponentialRampToValueAtTime(endF * 1.01, now + dur);
+
+    gainNode.gain.setValueAtTime(vol, now);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, now + dur);
+
+    osc1.connect(gainNode); osc2.connect(gainNode);
+    gainNode.connect(audioCtx.current.destination);
+    
+    osc1.start(now); osc2.start(now);
+    osc1.stop(now + dur); osc2.stop(now + dur);
   };
 
-  const stopEngine = () => {
-    if (engineOsc.current) { engineOsc.current.stop(); engineOsc.current = null; }
-  };
-
-  // --- 3. SCORE CALCULATION ---
+  // --- 3. SCORING & FEEDBACK ---
   const calculateFinalScore = (p2TotalTime: number) => {
-    // 1. Consistency Score (P1)
     let intervals: number[] = [];
     for(let i=1; i<p1Taps.length; i++) intervals.push(p1Taps[i] - p1Taps[i-1]);
-    const avg = intervals.reduce((a,b)=>a+b,0) / intervals.length;
-    const variance = intervals.reduce((a,b)=>a + Math.pow(b-avg, 2), 0) / intervals.length;
+    const avg = intervals.reduce((a,b)=>a+b,0) / (intervals.length || 1);
+    const variance = intervals.reduce((a,b)=>a + Math.pow(b-avg, 2), 0) / (intervals.length || 1);
     const consistency = Math.max(0, 100 - (Math.sqrt(variance) / 10));
 
-    // 2. Reflex Score (P2)
-    const reflex = Math.max(0, 100 - (p2TotalTime / 50));
-
-    // 3. Focus Score (P3)
-    const focus = p3Hits.reduce((a,b)=>a+b, 0) / (p3Hits.length || 1); // Fixed NaN potential
+    const reflex = Math.max(0, 100 - (p2TotalTime / 60));
+    const focus = p3Hits.reduce((a,b)=>a+b, 0) / (p3Hits.length || 1);
 
     const final = (consistency * 0.4) + (reflex * 0.3) + (focus * 0.3);
     setFinalScore(Math.floor(final));
+    playTransitionSound();
     setScreen('result');
+  };
+
+  const getVerdict = () => {
+    if (finalScore >= 75) return { title: "USTAAD! KIRAAN FOCUS!", body: "Pura Hyderabad tumhare rhythm pe naachra! Ek number performance!" };
+    if (finalScore >= 50) return { title: "ZABARDAST MOOD!", body: "Sahi jaare mawa! Engine ek dum fit hai. Rhythm tight hai!" };
+    // Below 50 - Funny Punches
+    return { title: "BAIGAN! TOTAL GHOTALA!", body: "Engine baith gaya mawa. Tension nakko lo, regulation game khelo aur engine garam karo!" };
   };
 
   // --- 4. GAME PHASES ---
@@ -121,19 +137,18 @@ export default function PranaIndex() {
       time--; setP1TimeLeft(time);
       if (time <= 0) { 
         clearInterval(timer); 
+        playTransitionSound();
         setScreen('p2'); 
         setP2StartTime(Date.now());
-        playTone(600, 'sine', 0.5); 
       }
     }, 1000);
   };
 
-  // Phase 3 Pulse Logic
   useEffect(() => {
     if (screen === 'p3') {
       const int = setInterval(() => {
         setPulseSize(s => {
-          let next = s + (3.5 * pulseDir);
+          let next = s + (3.0 * pulseDir);
           if (next >= 100 || next <= 0) setPulseDir(d => d * -1);
           return next;
         });
@@ -142,35 +157,39 @@ export default function PranaIndex() {
     }
   }, [screen, pulseDir]);
 
-  // --- 5. REGULATION (5-3-5) ---
+  // --- 5. REGULATION (AUTO 5-3-5) ---
   const startRegulation = () => {
     if (regCycles >= 3) { setRegPhase('DONE'); return; }
     
     // INHALE
     setRegPhase('INHALE');
     let time = 5.0;
+    playRev(80, 400, 5, 0.1); // Smooth 5s Rev Up
+    
     const inhaleInt = setInterval(() => {
       time -= 0.1; setRegTimer(time);
-      setEngineRev(100 + ((5 - time) * 40), 0.05);
-      if (time <= 0) {
+      if (time <= 0.05) {
         clearInterval(inhaleInt);
+        
         // HOLD
         setRegPhase('HOLD');
-        setEngineRev(300, 0.02);
+        playRev(400, 400, 3, 0.03); // Low rumble hold
         let hTime = 3.0;
+        
         const holdInt = setInterval(() => {
           hTime -= 0.1; setRegTimer(hTime);
-          if (hTime <= 0) {
+          if (hTime <= 0.05) {
             clearInterval(holdInt);
+            
             // EXHALE
             setRegPhase('EXHALE');
+            playRev(400, 80, 5, 0.1); // Smooth 5s Rev Down
             let eTime = 5.0;
+            
             const exhaleInt = setInterval(() => {
               eTime -= 0.1; setRegTimer(eTime);
-              setEngineRev(300 - ((5 - eTime) * 40), 0.05);
-              if (eTime <= 0) {
+              if (eTime <= 0.05) {
                 clearInterval(exhaleInt);
-                stopEngine();
                 setRegCycles(c => c + 1);
                 setRegPhase('READY');
               }
@@ -187,7 +206,6 @@ export default function PranaIndex() {
     }
   }, [screen, regPhase, regCycles]);
 
-
   // --- 6. SHARING & SAVING FEATURES ---
   const getShareText = () => `I just scored ${finalScore} on the PI Stress Test! Check your rhythm and beat my score:`;
   const getShareUrl = () => typeof window !== 'undefined' ? window.location.href : 'https://pranaindex.com';
@@ -197,79 +215,75 @@ export default function PranaIndex() {
     window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
   };
 
-  const shareNative = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: 'Prana Index Score',
-          text: getShareText(),
-          url: getShareUrl()
-        });
-      } catch (err) { console.error('Share failed:', err); }
-    } else {
-      alert("Native sharing isn't supported on this browser. Try WhatsApp or Save Image!");
-    }
-  };
-
   const downloadScoreImage = () => {
-    // Dynamically draw a beautiful square score card
     const canvas = document.createElement('canvas');
-    canvas.width = 1080; canvas.height = 1080; // Instagram ready
+    canvas.width = 1080; canvas.height = 1080; 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Background
     ctx.fillStyle = '#0A0E1A';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Gold Border
     ctx.strokeStyle = '#D4AF37';
     ctx.lineWidth = 15;
     ctx.strokeRect(40, 40, 1000, 1000);
 
-    // Text Setup
-    ctx.textAlign = 'center';
+    // Load actual Logo
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.src = '/gold-pi-logo.png'; 
     
-    // Logo "π"
-    ctx.font = 'italic 900 180px Inter, sans-serif';
-    ctx.fillStyle = '#D4AF37';
-    ctx.fillText('π', 540, 280);
+    img.onload = () => {
+      const imgWidth = 250;
+      const imgHeight = (img.height / img.width) * imgWidth;
+      ctx.drawImage(img, 540 - imgWidth / 2, 120, imgWidth, imgHeight);
 
-    // Branding
-    ctx.font = '900 50px Inter, sans-serif';
-    ctx.letterSpacing = '10px';
-    ctx.fillText('PRANA INDEX', 540, 400);
+      ctx.textAlign = 'center';
+      ctx.font = '900 45px Inter, sans-serif';
+      ctx.fillStyle = '#D4AF37';
+      ctx.letterSpacing = '10px';
+      ctx.fillText('PRANA INDEX', 540, 150 + imgHeight + 60);
 
-    // Score Label
-    ctx.font = '700 35px Inter, sans-serif';
-    ctx.fillStyle = 'white';
-    ctx.letterSpacing = '5px';
-    ctx.fillText('STRESS SCORE', 540, 520);
+      ctx.font = '700 30px Inter, sans-serif';
+      ctx.fillStyle = 'white';
+      ctx.letterSpacing = '5px';
+      ctx.fillText('STRESS SCORE', 540, 150 + imgHeight + 140);
 
-    // Final Score
-    ctx.font = '900 300px Inter, sans-serif';
-    ctx.fillStyle = '#D4AF37';
-    ctx.fillText(finalScore.toString(), 540, 800);
+      ctx.font = '900 320px Inter, sans-serif';
+      ctx.fillStyle = '#D4AF37';
+      ctx.fillText(finalScore.toString(), 540, 150 + imgHeight + 450);
 
-    // Verdict Phrase
-    const verdict = finalScore > 90 ? "USTAAD! SUPREME FOCUS" : finalScore > 75 ? "ELITE COHERENCE" : "CALIBRATION NEEDED";
-    ctx.font = '900 45px Inter, sans-serif';
-    ctx.fillStyle = 'white';
-    ctx.fillText(verdict, 540, 940);
+      const { title } = getVerdict();
+      ctx.font = '900 45px Inter, sans-serif';
+      ctx.fillStyle = 'white';
+      ctx.fillText(title, 540, 940);
 
-    // Trigger Download
-    const link = document.createElement('a');
-    link.download = `PI_Stress_Score_${finalScore}.png`;
-    link.href = canvas.toDataURL('image/png');
-    link.click();
+      const link = document.createElement('a');
+      link.download = `PI_Stress_Score_${finalScore}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    };
+
+    // Fallback if image path is wrong
+    img.onerror = () => {
+        ctx.textAlign = 'center';
+        ctx.font = 'italic 900 180px Inter, sans-serif';
+        ctx.fillStyle = '#D4AF37';
+        ctx.fillText('π', 540, 250);
+        ctx.font = '900 45px Inter, sans-serif';
+        ctx.fillText('PRANA INDEX', 540, 350);
+        ctx.font = '900 300px Inter, sans-serif';
+        ctx.fillText(finalScore.toString(), 540, 750);
+        const link = document.createElement('a');
+        link.download = `PI_Stress_Score.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+    };
   };
 
-  // --- STYLING HELPERS ---
   const socialBtnStyle = {
     backgroundColor: 'rgba(212,175,55,0.1)', border: '1px solid #D4AF37', color: '#D4AF37', 
     padding: '12px 20px', borderRadius: '30px', fontWeight: 900, cursor: 'pointer', fontSize: '14px', flex: 1
   };
-
 
   return (
     <div style={{ backgroundColor: '#0A0E1A', color: 'white', minHeight: '100vh', touchAction: 'none', overflow: 'hidden', position: 'relative', fontFamily: 'Inter, sans-serif' }}>
@@ -307,14 +321,14 @@ export default function PranaIndex() {
 
         {screen === 'p1' && (
           <div style={{ textAlign: 'center' }}>
-            <p style={{ color: '#D4AF37', letterSpacing: '2px', marginBottom: '20px' }}>PHASE 01: CONSISTENCY</p>
+            <p style={{ color: '#D4AF37', letterSpacing: '2px', marginBottom: '20px', fontSize: '12px', fontWeight: 900 }}>PHASE 01: CONSISTENCY</p>
             <div style={{ fontSize: '50px', fontWeight: 900, marginBottom: '30px' }}>{p1TimeLeft}<span style={{fontSize: '20px'}}>s</span></div>
             <div 
-              onPointerDown={() => { setIsTapping(true); setP1Taps([...p1Taps, Date.now()]); playTone(200, 'sine', 0.1); }}
+              onPointerDown={() => { setIsTapping(true); setP1Taps([...p1Taps, Date.now()]); playTone(200, 'sine', 0.1, 0.2); }}
               onPointerUp={() => setIsTapping(false)}
               style={{ 
                 width: '200px', height: '200px', backgroundColor: 'white', borderRadius: '50%', 
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto',
                 transform: isTapping ? 'scale(0.92)' : 'scale(1)', transition: '0.1s',
                 boxShadow: isTapping ? '0 0 60px white' : '0 0 20px rgba(255,255,255,0.2)'
               }}
@@ -327,31 +341,30 @@ export default function PranaIndex() {
 
         {screen === 'p2' && (
           <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>
-             <p style={{ position: 'absolute', top: '120px', width: '100%', textAlign: 'center', color: '#D4AF37', fontSize: '12px' }}>PHASE 02: REFLUX ({p2Count}/5)</p>
+             <p style={{ position: 'absolute', top: '120px', width: '100%', textAlign: 'center', color: '#D4AF37', fontSize: '12px', fontWeight: 900 }}>PHASE 02: REFLUX ({p2Count}/5)</p>
              <button 
                 onPointerDown={() => {
-                    playTone(800, 'triangle', 0.1);
+                    playTone(800, 'triangle', 0.1, 0.2);
                     if(p2Count + 1 >= 5) {
                         calculateFinalScore(Date.now() - p2StartTime);
-                        setScreen('p3');
                     } else {
                         setP2Count(c => c + 1);
                         targetPos.current = { left: Math.random()*70+15+'%', top: Math.random()*70+15+'%' };
                     }
                 }}
-                style={{ position: 'absolute', left: targetPos.current.left, top: targetPos.current.top, width: '80px', height: '80px', borderRadius: '50%', backgroundColor: '#D4AF37', color: 'black', fontWeight: 900, border: 'none', cursor: 'pointer' }}
+                style={{ position: 'absolute', left: targetPos.current.left, top: targetPos.current.top, width: '80px', height: '80px', borderRadius: '50%', backgroundColor: '#D4AF37', color: 'black', fontWeight: 900, border: 'none', cursor: 'pointer', fontSize: '24px' }}
              >π</button>
           </div>
         )}
 
         {screen === 'p3' && (
           <div style={{ textAlign: 'center' }}>
-            <p style={{ color: '#D4AF37', marginBottom: '50px', fontSize: '12px' }}>PHASE 03: FOCUS ({p3Hits.length}/3)</p>
-            <div style={{ width: '280px', height: '280px', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <p style={{ color: '#D4AF37', marginBottom: '50px', fontSize: '12px', fontWeight: 900 }}>PHASE 03: FOCUS ({p3Hits.length}/3)</p>
+            <div style={{ width: '280px', height: '280px', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto' }}>
                 <div style={{ position: 'absolute', width: pulseSize+'%', height: pulseSize+'%', borderRadius: '50%', backgroundColor: pulseSize > 85 ? '#39FF14' : '#D4AF37', opacity: pulseSize > 85 ? 0.8 : 0.4, transition: 'background-color 0.1s' }}></div>
                 <button onPointerDown={() => {
                     setP3Hits([...p3Hits, pulseSize]);
-                    if (pulseSize > 85) playTone(1200, 'sine', 0.2, 0.2); else playTone(100, 'sawtooth', 0.2);
+                    if (pulseSize > 85) playTone(1200, 'sine', 0.2, 0.3); else playTone(150, 'sawtooth', 0.2, 0.2);
                     if (p3Hits.length + 1 >= 3) {
                        const reflexTime = Date.now() - p2StartTime;
                        calculateFinalScore(reflexTime);
@@ -363,20 +376,22 @@ export default function PranaIndex() {
 
         {screen === 'result' && (
           <div style={{ textAlign: 'center', animation: 'fadeIn 1s', maxWidth: '380px', width: '100%' }}>
-            <p style={{ fontSize: '12px', color: '#D4AF37', letterSpacing: '3px' }}>STRESS SCORE</p>
+            <p style={{ fontSize: '12px', color: '#D4AF37', letterSpacing: '3px' }}>PI STRESS SCORE</p>
             <h3 style={{ fontSize: '130px', fontWeight: 900, color: '#D4AF37', margin: '10px 0', lineHeight: 1 }}>{finalScore}</h3>
-            <p style={{ fontWeight: 900, color: 'white', fontSize: '18px', marginBottom: '40px' }}>
-              {finalScore > 90 ? "USTAAD! SUPREME FOCUS" : finalScore > 75 ? "ELITE COHERENCE" : "CALIBRATION NEEDED"}
-            </p>
+            
+            <div style={{ backgroundColor: 'rgba(255,255,255,0.05)', padding: '20px', borderRadius: '25px', border: '1px solid #ffffff11', margin: '20px 0 30px 0' }}>
+               <p style={{ color: '#D4AF37', fontWeight: 900, fontSize: '20px', marginBottom: '5px' }}>{getVerdict().title}</p>
+               <p style={{ opacity: 0.8, fontSize: '14px', fontStyle: 'italic', lineHeight: 1.4 }}>{getVerdict().body}</p>
+            </div>
             
             {/* SHARING ROW */}
             <div style={{ display: 'flex', gap: '10px', marginBottom: '30px', justifyContent: 'center' }}>
                <button onClick={downloadScoreImage} style={socialBtnStyle}>📥 Save</button>
                <button onClick={shareWhatsApp} style={socialBtnStyle}>💬 WhatsApp</button>
-               <button onClick={shareNative} style={socialBtnStyle}>🔗 Share</button>
             </div>
 
-            <input placeholder="Email to Regulate..." value={email} onChange={e=>setEmail(e.target.value)} style={{ width: '100%', padding: '20px', borderRadius: '50px', border: '1px solid #D4AF37', background: 'rgba(255,255,255,0.05)', color: 'white', textAlign: 'center', marginBottom: '20px' }} />
+            <p style={{ fontSize: '10px', color: '#D4AF37', fontWeight: 900, marginBottom: '10px' }}>ENTER EMAIL TO START PI REGULATION GAME</p>
+            <input placeholder="ustaad@hyderabad.com" value={email} onChange={e=>setEmail(e.target.value)} style={{ width: '100%', padding: '20px', borderRadius: '50px', border: '1px solid #D4AF37', background: 'rgba(255,255,255,0.05)', color: 'white', textAlign: 'center', marginBottom: '20px' }} />
             <button onClick={() => { setRegPhase('READY'); setScreen('reg'); }} style={{ backgroundColor: '#D4AF37', color: 'black', padding: '18px 50px', borderRadius: '50px', fontWeight: 900, border: 'none', width: '100%', cursor: 'pointer' }}>CALIBRATE REGULATION</button>
           </div>
         )}
@@ -386,15 +401,15 @@ export default function PranaIndex() {
             <p style={{ color: '#D4AF37', fontSize: '28px', fontWeight: 900, fontStyle: 'italic', marginBottom: '10px' }}>{regPhase}</p>
             <div style={{ fontSize: '80px', fontWeight: 900, marginBottom: '40px' }}>{regTimer.toFixed(1)}<span style={{fontSize: '20px'}}>s</span></div>
             
-            <div style={{ width: '250px', height: '250px', borderRadius: '50%', border: '2px solid rgba(212,175,55,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+            <div style={{ width: '250px', height: '250px', borderRadius: '50%', border: '2px solid rgba(212,175,55,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', margin: '0 auto' }}>
                 <div style={{ 
                   width: '100px', height: '100px', borderRadius: '50%', backgroundColor: '#D4AF37',
-                  transform: regPhase === 'INHALE' ? `scale(${1 + (5-regTimer)*0.3})` : regPhase === 'EXHALE' ? `scale(${2.5 - (5-regTimer)*0.3})` : 'scale(1)',
+                  transform: regPhase === 'INHALE' ? `scale(${1 + (5-regTimer)*0.3})` : regPhase === 'EXHALE' ? `scale(${2.5 - (5-regTimer)*0.3})` : regPhase === 'HOLD' ? `scale(2.5)` : 'scale(1)',
                   transition: '0.1s linear', boxShadow: '0 0 50px rgba(212,175,55,0.4)'
                 }}></div>
             </div>
             
-            <p style={{ marginTop: '50px', letterSpacing: '2px', color: '#D4AF37' }}>CYCLE {regCycles + 1} / 3</p>
+            <p style={{ marginTop: '50px', letterSpacing: '2px', color: '#D4AF37', fontWeight: 900 }}>CYCLE {regCycles + 1} / 3</p>
             {regPhase === 'DONE' && <button onClick={() => window.location.reload()} style={{ color: '#39FF14', fontWeight: 900, textDecoration: 'underline', marginTop: '30px', background: 'none', border: 'none', cursor: 'pointer' }}>COHERENCE ACHIEVED - RESTART</button>}
           </div>
         )}
