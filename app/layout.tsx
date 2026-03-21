@@ -4,7 +4,7 @@ import './globals.css';
 export const metadata = {
   title: 'Prana Index',
   description: 'Breathing and Calibration',
-}; 
+};
 
 export default function RootLayout({
   children,
